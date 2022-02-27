@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.areenatest"
+       version="0.0.1"
+       name="YLE Areena test"
+       provider-name="">
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+        <import addon="script.module.requests" version="2.25.1+matrix.1" />
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="main.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <language>en</language>
+        <language>fi</language>
+        <summary lang="en">Watch YLE Areena</summary>
+        <summary lang="fi">Katso YLE Areenaa</summary>
+        <description lang="en">YLE Areena plugin</description>
+        <description lang="fi">YLE Areena lisäosa</description>
+        <license>GPL 3.0</license>
+        <source></source>
+    </extension>
+</addon>
