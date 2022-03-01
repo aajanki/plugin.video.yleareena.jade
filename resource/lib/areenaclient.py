@@ -1,5 +1,5 @@
 import requests
-from . import extractor
+from . import extractor, logger
 from typing import Dict, List, Optional
 from urllib.parse import urlencode
 
@@ -62,15 +62,22 @@ def _parse_search_results(search_response: Dict) -> List[StreamLink]:
         pointer_type = item.get('pointer', {}).get('type')
 
         if item.get('type') == 'card' and uri:
-            # TODO: series
-            if pointer_type in ['episode', 'clip']:
-                image_id = item.get('image', {}).get('id')
-
+            image_id = item.get('image', {}).get('id')
+            if pointer_type in ['program', 'clip']:
                 results.append(StreamLink(
                     homepage=uri,
                     title=item.get('title'),
                     thumbnail_url=_image_url_from_id(image_id),
                 ))
+            elif pointer_type == 'series':
+                results.append(StreamLink(
+                    homepage=uri,
+                    title=item.get('title'),
+                    thumbnail_url=_image_url_from_id(image_id),
+                    is_folder=True
+                ))
+            else:
+                logger.warning(f'Unknown pointer type: {pointer_type}')
 
     return results
 
@@ -108,7 +115,7 @@ def _search_url(keyword: str) -> str:
     return f'https://areena.api.yle.fi/v1/ui/search?{q}'
 
 
-def _image_url_from_id(image_id):
+def _image_url_from_id(image_id: str) -> str:
     return (
         f'https://images.cdn.yle.fi/image/upload/'
         f'ar_1.0,c_fill,d_yle-areena.jpg,dpr_auto,f_auto,'

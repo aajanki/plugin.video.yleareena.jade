@@ -2,7 +2,7 @@ import sys
 import xbmcaddon  # type: ignore
 import xbmcgui  # type: ignore
 import xbmcplugin  # type: ignore
-from typing import Any, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 from urllib.parse import urlencode, parse_qsl
 from resource.lib import areenaclient
 from resource.lib import logger
@@ -51,6 +51,20 @@ def list_item_video(
     return (item_url, item, is_folder)
 
 
+def list_item_folder(
+    label: str,
+    path: str,
+    thumbnail: Optional[str] = None
+) -> Tuple[str, Any, bool]:
+    query = urlencode({'action': 'folder', 'path': path})
+    item_url = f'{_url}?{query}'
+    item = xbmcgui.ListItem(label)
+    if thumbnail:
+        item.setArt({'thumb': thumbnail})
+    is_folder = True
+    return (item_url, item, is_folder)
+
+
 def list_item_search() -> Tuple[str, Any, bool]:
     item_url = f'{_url}?action=searchresults'
     item = xbmcgui.ListItem('Search')  # TODO translate
@@ -58,15 +72,32 @@ def list_item_search() -> Tuple[str, Any, bool]:
     return (item_url, item, is_folder)
 
 
+def show_folder(path: str) -> None:
+    series_id = path.rsplit('/', 1)[-1]
+    show_links(areenaclient.playlist(series_id))
+
+
 def show_search_results(keyword: str) -> None:
+    show_links(areenaclient.search(keyword))
+
+
+def show_links(streams: List[areenaclient.StreamLink]) -> None:
     listing = []
-    for res in areenaclient.search(keyword):
-        listing.append(list_item_video(
-            label=res.title,
-            path=res.homepage,
-            thumbnail=res.thumbnail_url,
-            action='play_areenaurl'
-        ))
+    for stream in streams:
+        if stream.is_folder:
+            item = list_item_folder(
+                label=stream.title,
+                path=stream.homepage,
+                thumbnail=stream.thumbnail_url
+            )
+        else:
+            item = list_item_video(
+                label=stream.title,
+                path=stream.homepage,
+                thumbnail=stream.thumbnail_url,
+                action='play_areenaurl'
+            )
+        listing.append(item)
 
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_NONE)
@@ -92,6 +123,8 @@ def router(paramstring: str) -> None:
 
             logger.info(f'Playing URL: {media_url}')
             play_media(media_url)
+        elif action == 'folder':
+            show_folder(params['path'])
         elif action == 'searchresults':
             show_search_results('Pasila')
         else:
