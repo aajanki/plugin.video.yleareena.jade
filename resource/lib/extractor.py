@@ -1,21 +1,21 @@
 import json
 import requests
 from . import logger
-from typing import Dict
+from typing import Any, Dict, Literal, Optional
 from urllib.parse import urlparse
 
 
 class AreenaPreviewApiResponse():
-    def __init__(self, data):
+    def __init__(self, data: Dict[str, Any]) -> None:
         self.preview = data or {}
 
-    def manifest_url(self):
+    def manifest_url(self) -> Optional[str]:
         return self.ongoing().get('manifest_url')
 
-    def media_url(self):
+    def media_url(self) -> Optional[str]:
         return self.ongoing().get('media_url')
 
-    def media_type(self):
+    def media_type(self) -> Optional[Literal['audio', 'video']]:
         if not self.preview:
             return None
         elif self.ongoing().get('content_type') == 'AudioObject':
@@ -23,20 +23,20 @@ class AreenaPreviewApiResponse():
         else:
             return 'video'
 
-    def is_live(self):
+    def is_live(self) -> bool:
         data = self.preview.get('data', {})
         return data.get('ongoing_channel') is not None
 
-    def is_pending(self):
+    def is_pending(self) -> bool:
         data = self.preview.get('data', {})
         pending = data.get('pending_event') or data.get('pending_ondemand')
         return pending is not None
 
-    def is_expired(self):
+    def is_expired(self) -> bool:
         data = self.preview.get('data', {})
         return data.get('gone') is not None
 
-    def ongoing(self):
+    def ongoing(self) -> Dict[str, Any]:
         data = self.preview.get('data', {})
         return (data.get('ongoing_ondemand') or
                 data.get('ongoing_event', {}) or
@@ -45,12 +45,29 @@ class AreenaPreviewApiResponse():
                 {})
 
 
-def extract_media_url(url: str) -> str:
-    metadata = extract(url)
+def extract_media_url(areena_page_url: str) -> Optional[str]:
+    """Resolve playable video stream URL for a given Areena page URL (yleareena://items/1-2250636)."""
+    metadata = extract(areena_page_url)
     return metadata.get('url')
 
 
-def extract(url: str) -> Dict:
+def get_text(text_object: Dict[str, str], prefer_language: str = 'fi') -> Optional[str]:
+    """Extract translated message from Areena API localized text object.
+
+    Example text_object: {"fi": "teksti suomeksi", "sv": "samma på svenska"}
+
+    Return text in prefer_language if available. Otherwise, return an arbitrary
+    language. If text_object is empty, return None.
+    """
+    if prefer_language in text_object:
+        return text_object[prefer_language]
+    elif text_object:
+        return list(text_object.values())[0]
+    else:
+        return None
+
+
+def extract(url: str) -> Dict[str, Any]:
     logger.info(f'Extracting stream URL from {url}')
     pid = program_id_from_url(url)
     logger.info(f'program ID = {pid}')
@@ -63,9 +80,9 @@ def extract(url: str) -> Dict:
     return metadata
 
 
-def metadata_for_pid(pid: str) -> Dict:
+def metadata_for_pid(pid: str) -> Dict[str, Any]:
     if not pid:
-        return None
+        return {}
 
     preview = preview_parser(pid)
 

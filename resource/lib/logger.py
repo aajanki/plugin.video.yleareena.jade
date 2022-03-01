@@ -1,5 +1,5 @@
 try:
-    import xbmc
+    import xbmc  # type: ignore
 
     LOGDEBUG = xbmc.LOGDEBUG
     LOGINFO = xbmc.LOGINFO

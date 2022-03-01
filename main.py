@@ -1,8 +1,8 @@
 import sys
-import xbmcaddon
-import xbmcgui
-import xbmcplugin
-from typing import Optional, Tuple
+import xbmcaddon  # type: ignore
+import xbmcgui  # type: ignore
+import xbmcplugin  # type: ignore
+from typing import Any, Optional, Tuple
 from urllib.parse import urlencode, parse_qsl
 from resource.lib import areenaclient
 from resource.lib import logger
@@ -14,7 +14,7 @@ _addon = xbmcaddon.Addon()
 ls = _addon.getLocalizedString
 
 
-def show_menu():
+def show_menu() -> None:
     yle_tv1_live_url = 'https://yletv.akamaized.net/hls/live/622365/yletv1fin/index.m3u8'
     yle_tv1_thumbnail_url = 'https://images.cdn.yle.fi/image/upload/c_fill,f_auto,h_64,q_auto:eco/v1643371700/yle-tv1_vt.png'
     yle_tv2_live_url = 'https://yletv.akamaized.net/hls/live/622366/yletv2fin/index.m3u8'
@@ -39,7 +39,7 @@ def list_item_video(
     path: str,
     thumbnail: Optional[str] = None,
     action: str = 'play'
-) -> Tuple[str, str, str]:
+) -> Tuple[str, Any, bool]:
     query = urlencode({'action': action, 'path': path})
     item_url = f'{_url}?{query}'
     item = xbmcgui.ListItem(label)
@@ -51,29 +51,33 @@ def list_item_video(
     return (item_url, item, is_folder)
 
 
-def list_item_search() -> Tuple[str, str, str]:
+def list_item_search() -> Tuple[str, Any, bool]:
     item_url = f'{_url}?action=searchresults'
     item = xbmcgui.ListItem('Search')  # TODO translate
     is_folder = True
     return (item_url, item, is_folder)
 
 
-def show_search_results(keyword: str):
+def show_search_results(keyword: str) -> None:
     listing = []
     for res in areenaclient.search(keyword):
         listing.append(list_item_video(
-            res['title'], res['homepage'], res['thumbnail_image_url'], action='play_areenaurl'))
+            label=res.title,
+            path=res.homepage,
+            thumbnail=res.thumbnail_url,
+            action='play_areenaurl'
+        ))
 
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_NONE)
     xbmcplugin.endOfDirectory(_handle)
 
 
-def play_media(url: str):
+def play_media(url: str) -> None:
     xbmcplugin.setResolvedUrl(_handle, True, listitem=xbmcgui.ListItem(path=url))
 
 
-def router(paramstring: str):
+def router(paramstring: str) -> None:
     params = dict(parse_qsl(paramstring[1:]))
     if params:
         action = params.get('action')
@@ -81,9 +85,10 @@ def router(paramstring: str):
             play_media(params['path'])
         elif action == 'play_areenaurl':
             media_url = extractor.extract_media_url(params['path'])
-            if not media_url:
+            if media_url is None:
                 # TODO: error
                 logger.error(f'Failed to extract media URL for {params["path"]}')
+                return
 
             logger.info(f'Playing URL: {media_url}')
             play_media(media_url)
