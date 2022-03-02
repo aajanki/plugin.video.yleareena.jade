@@ -23,9 +23,9 @@ def show_menu() -> None:
     yle_teema_fem_thumbnail_url = 'https://images.cdn.yle.fi/image/upload/c_fill,f_auto,h_64,q_auto:eco/v1643371700/yle-teema-fem_vt.png'
 
     listing = [
-        list_item_video('YLE TV1', yle_tv1_live_url, yle_tv1_thumbnail_url),
-        list_item_video('YLE TV2', yle_tv2_live_url, yle_tv2_thumbnail_url),
-        list_item_video('YLE Teema/Fem', yle_teema_fem_live_url, yle_teema_fem_thumbnail_url),
+        list_item_video('YLE TV1', yle_tv1_live_url, yle_tv1_thumbnail_url, is_live=True),
+        list_item_video('YLE TV2', yle_tv2_live_url, yle_tv2_thumbnail_url, is_live=True),
+        list_item_video('YLE Teema/Fem', yle_teema_fem_live_url, yle_teema_fem_thumbnail_url, is_live=True),
         list_item_search(),
     ]
 
@@ -38,12 +38,15 @@ def list_item_video(
     label: str,
     path: str,
     thumbnail: Optional[str] = None,
-    action: str = 'play'
+    action: str = 'play',
+    is_live: bool = False
 ) -> Tuple[str, Any, bool]:
     query = urlencode({'action': action, 'path': path})
     item_url = f'{_url}?{query}'
     item = xbmcgui.ListItem(label)
     item.setProperty('IsPlayable', 'true')
+    if is_live:
+        item.setProperty('IsLive', 'true')
     item.setInfo('video', {'title': label})
     if thumbnail:
         item.setArt({'thumb': thumbnail})
@@ -66,19 +69,48 @@ def list_item_folder(
 
 
 def list_item_search() -> Tuple[str, Any, bool]:
-    item_url = f'{_url}?action=searchresults'
+    item_url = f'{_url}?action=searchmenu'
     item = xbmcgui.ListItem('Search')  # TODO translate
     is_folder = True
     return (item_url, item, is_folder)
 
 
+def list_item_new_search() -> Tuple[str, Any, bool]:
+    item_url = f'{_url}?action=searchinput'
+    item = xbmcgui.ListItem('[B]New search[/B]')  # TODO translate
+    is_folder = True
+    return (item_url, item, is_folder)
+
+
+def do_search_query() -> None:
+    dialog = xbmcgui.Dialog()
+    keyword = dialog.input('Search', '', type=xbmcgui.INPUT_ALPHANUM)
+
+    if keyword:
+        logger.info(f'Executing search: {keyword}')
+
+        # TODO: show an error message if no results are found
+        searchresults = areenaclient.search(keyword)
+        show_links(searchresults)
+    else:
+        # TODO
+        pass
+
+
+def show_search() -> None:
+    listing = [
+        list_item_new_search(),
+    ]
+    # TODO: search history
+
+    xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
+    xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_NONE)
+    xbmcplugin.endOfDirectory(_handle)
+
+
 def show_folder(path: str) -> None:
     series_id = path.rsplit('/', 1)[-1]
     show_links(areenaclient.playlist(series_id))
-
-
-def show_search_results(keyword: str) -> None:
-    show_links(areenaclient.search(keyword))
 
 
 def show_links(streams: List[areenaclient.StreamLink]) -> None:
@@ -109,6 +141,8 @@ def play_media(url: str) -> None:
 
 
 def router(paramstring: str) -> None:
+    logger.info(f'router @ {paramstring}')
+
     params = dict(parse_qsl(paramstring[1:]))
     if params:
         action = params.get('action')
@@ -125,8 +159,10 @@ def router(paramstring: str) -> None:
             play_media(media_url)
         elif action == 'folder':
             show_folder(params['path'])
-        elif action == 'searchresults':
-            show_search_results('Pasila')
+        elif action == 'searchmenu':
+            show_search()
+        elif action == 'searchinput':
+            do_search_query()
         else:
             logger.error(f"Unknown action: {action or '(missing)'}")
     else:
