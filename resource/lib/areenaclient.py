@@ -1,12 +1,16 @@
 import requests
 from . import extractor, logger
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 from urllib.parse import urlencode
 
 DEFAULT_PAGE_SIZE = 30
 
 
-class StreamLink():
+class AreenaLink():
+    pass
+
+
+class StreamLink(AreenaLink):
     def __init__(
         self,
         homepage: str,
@@ -20,7 +24,7 @@ class StreamLink():
         self.is_folder = is_folder
 
 
-class SearchNavigationLink():
+class SearchNavigationLink(AreenaLink):
     def __init__(
         self,
         keyword: str,
@@ -32,29 +36,45 @@ class SearchNavigationLink():
         self.page_size = page_size
 
 
-def playlist(series_id: str, page_size: int = 20, offset: int = 0) -> List[StreamLink]:
-    playlist_data = _load_playlist_page(series_id, page_size, offset)
-    return _parse_playlist(playlist_data)
+class SeriesNavigationLink(AreenaLink):
+    def __init__(
+        self,
+        series_id: str,
+        offset: int,
+        page_size: int
+    ):
+        self.series_id = series_id
+        self.offset = offset
+        self.page_size = page_size
+
+
+def playlist(
+    series_id: str,
+    offset: int = 0,
+    page_size: int = DEFAULT_PAGE_SIZE
+) -> List[AreenaLink]:
+    playlist_data = _load_playlist_page(series_id, offset, page_size)
+    return _parse_playlist(playlist_data, series_id)
 
 
 def search(
     keyword: str,
     offset: int = 0,
     page_size: int = DEFAULT_PAGE_SIZE
-) -> List[Union[StreamLink, SearchNavigationLink]]:
+) -> List[AreenaLink]:
     search_response = _get_search_results(keyword, offset, page_size)
     return _parse_search_results(search_response)
 
 
-def _load_playlist_page(series_id: str, page_size: int, offset: int) -> List:
-    r = requests.get(_playlist_url(series_id, page_size=page_size, offset=offset))
+def _load_playlist_page(series_id: str, offset: int, page_size: int) -> Dict:
+    r = requests.get(_playlist_url(series_id, ascending=True, offset=offset, page_size=page_size))
     r.raise_for_status()
-    return r.json().get('data', [])
+    return r.json()
 
 
-def _parse_playlist(playlist_data: List) -> List[StreamLink]:
-    links = []
-    for episode in playlist_data:
+def _parse_playlist(playlist_data: Dict, series_id: str) -> List[AreenaLink]:
+    links: List[AreenaLink] = []
+    for episode in playlist_data.get('data', []):
         if 'id' in episode:
             pid = episode['id']
             image_id = episode.get('image').get('id')
@@ -64,6 +84,17 @@ def _parse_playlist(playlist_data: List) -> List[StreamLink]:
                 title=extractor.get_text(episode.get('title', {})),
                 thumbnail_url=_image_url_from_id(image_id)
             ))
+
+    # Pagination links
+    meta = playlist_data.get('meta', {})
+    limit = meta.get('limit', DEFAULT_PAGE_SIZE)
+    offset = meta.get('offset', 0)
+    count = meta.get('count', 0)
+
+    next_offset = offset + limit
+    if next_offset < count:
+        links.append(SeriesNavigationLink(series_id, next_offset, limit))
+
     return links
 
 
@@ -73,8 +104,8 @@ def _get_search_results(keyword: str, offset: int, page_size: int) -> Dict:
     return r.json()
 
 
-def _parse_search_results(search_response: Dict) -> List[Union[StreamLink, SearchNavigationLink]]:
-    results: List[Union[StreamLink, SearchNavigationLink]] = []
+def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
+    results: List[AreenaLink] = []
     for item in search_response.get('data', []):
         uri = item.get('pointer', {}).get('uri')
         pointer_type = item.get('pointer', {}).get('type')
@@ -110,14 +141,14 @@ def _parse_search_results(search_response: Dict) -> List[Union[StreamLink, Searc
     limit = meta.get('limit', DEFAULT_PAGE_SIZE)
     count = meta.get('count', 0)
     
-    if offset + limit < count:
-        next_offset = offset + limit
-        results.append(SearchNavigationLink(keyword, next_offset, DEFAULT_PAGE_SIZE))
+    next_offset = offset + limit
+    if next_offset < count:
+        results.append(SearchNavigationLink(keyword, next_offset, limit))
 
     return results
 
 
-def _playlist_url(series_id: str, ascending: bool = True, page_size: int = 20, offset: int = 0) -> str:
+def _playlist_url(series_id: str, ascending: bool, offset: int, page_size: int) -> str:
     sort_order = 'asc' if ascending else 'desc'
     query = {
         'type': 'program',

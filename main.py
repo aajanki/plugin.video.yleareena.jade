@@ -2,7 +2,7 @@ import sys
 import xbmcaddon  # type: ignore
 import xbmcgui  # type: ignore
 import xbmcplugin  # type: ignore
-from typing import Any, Optional, Sequence, Tuple, Union
+from typing import Any, Optional, Sequence, Tuple
 from urllib.parse import urlencode, parse_qsl
 from resource.lib import areenaclient
 from resource.lib import logger
@@ -54,13 +54,20 @@ def list_item_video(
     return (item_url, item, is_folder)
 
 
-def list_item_folder(
+def list_item_series(
     label: str,
-    path: str,
-    thumbnail: Optional[str] = None
+    series_id: str,
+    thumbnail: Optional[str] = None,
+    offset: int = 0,
+    page_size: int = areenaclient.DEFAULT_PAGE_SIZE
 ) -> Tuple[str, Any, bool]:
-    query = urlencode({'action': 'folder', 'path': path})
-    item_url = f'{_url}?{query}'
+    q = urlencode({
+        'action': 'series',
+        'series_id': series_id,
+        'offset': offset,
+        'page_size': page_size
+    })
+    item_url = f'{_url}?{q}'
     item = xbmcgui.ListItem(label)
     if thumbnail:
         item.setArt({'thumb': thumbnail})
@@ -131,21 +138,19 @@ def show_search() -> None:
     xbmcplugin.endOfDirectory(_handle)
 
 
-def show_folder(path: str) -> None:
-    series_id = path.rsplit('/', 1)[-1]
-    show_links(areenaclient.playlist(series_id))
+def show_series(series_id: str, offset: int, page_size: int) -> None:
+    show_links(areenaclient.playlist(series_id, offset, page_size))
 
 
-def show_links(
-    links: Sequence[Union[areenaclient.StreamLink, areenaclient.SearchNavigationLink]]
-) -> None:
+def show_links(links: Sequence[areenaclient.AreenaLink]) -> None:
     listing = []
     for link in links:
         if isinstance(link, areenaclient.StreamLink):
             if link.is_folder:
-                item = list_item_folder(
+                series_id = link.homepage.rsplit('/', 1)[-1]
+                item = list_item_series(
                     label=link.title,
-                    path=link.homepage,
+                    series_id=series_id,
                     thumbnail=link.thumbnail_url
                 )
             else:
@@ -162,6 +167,16 @@ def show_links(
                 offset=link.offset,
                 page_size=link.page_size
             )
+        elif isinstance(link, areenaclient.SeriesNavigationLink):
+            item = list_item_series(
+                label='Next page',
+                series_id=link.series_id,
+                offset=link.offset,
+                page_size=link.page_size
+            )
+        else:
+            logger.warning(f'Unknown Areena link type: {type(link)}')
+            continue
 
         listing.append(item)
 
@@ -198,8 +213,10 @@ def router(paramstring: str) -> None:
 
             logger.info(f'Playing URL: {media_url}')
             play_media(media_url)
-        elif action == 'folder':
-            show_folder(params['path'])
+        elif action == 'series':
+            offset = int_or_else(params.get('offset', ''), 0)
+            page_size = int_or_else(params.get('page_size', ''), areenaclient.DEFAULT_PAGE_SIZE)
+            show_series(params['series_id'], offset, page_size)
         elif action == 'search_menu':
             show_search()
         elif action == 'search_input':
