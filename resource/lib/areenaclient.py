@@ -1,5 +1,6 @@
 import requests
 from . import extractor, logger
+from datetime import datetime
 from typing import Dict, List, Optional
 from urllib.parse import urlencode
 
@@ -15,12 +16,18 @@ class StreamLink(AreenaLink):
         self,
         homepage: str,
         title: Optional[str],
-        thumbnail_url: Optional[str],
+        published: Optional[datetime] = None,
+        image_id: Optional[str] = None,
         is_folder: bool = False
     ):
         self.homepage = homepage
         self.title = title or '???'
-        self.thumbnail_url = thumbnail_url
+        self.published = published
+        self.thumbnail: Optional[str] = None
+        self.fanart: Optional[str] = None
+        if image_id is not None:
+            self.thumbnail = _thumbnail_url(image_id)
+            self.fanart = _fanart_url(image_id)
         self.is_folder = is_folder
 
 
@@ -77,12 +84,12 @@ def _parse_playlist(playlist_data: Dict, series_id: str) -> List[AreenaLink]:
     for episode in playlist_data.get('data', []):
         if 'id' in episode:
             pid = episode['id']
-            image_id = episode.get('image').get('id')
 
             links.append(StreamLink(
                 homepage=f'yleareena://items/{pid}',
                 title=extractor.get_text(episode.get('title', {})),
-                thumbnail_url=_image_url_from_id(image_id)
+                image_id=episode.get('image', {}).get('id'),
+                published=extractor.parse_publication_event_date(episode)
             ))
 
     # Pagination links
@@ -116,13 +123,12 @@ def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
                 results.append(StreamLink(
                     homepage=uri,
                     title=item.get('title'),
-                    thumbnail_url=_image_url_from_id(image_id),
+                    image_id=image_id,
                 ))
             elif pointer_type == 'series':
                 results.append(StreamLink(
                     homepage=uri,
                     title=item.get('title'),
-                    thumbnail_url=None,
                     is_folder=True
                 ))
             else:
@@ -181,9 +187,17 @@ def _search_url(keyword: str, offset: int, page_size: int) -> str:
     return f'https://areena.api.yle.fi/v1/ui/search?{q}'
 
 
-def _image_url_from_id(image_id: str) -> str:
+def _thumbnail_url(image_id: str) -> str:
     return (
         f'https://images.cdn.yle.fi/image/upload/'
         f'ar_1.0,c_fill,d_yle-areena.jpg,dpr_auto,f_auto,'
         f'fl_lossy,q_auto:eco,w_65/v1644410176/{image_id}.jpg'
+    )
+
+
+def _fanart_url(image_id: str) -> str:
+    return (
+        f'https://images.cdn.yle.fi/image/upload/'
+        f'w_320,dpr_1.0,fl_lossy,f_auto,q_auto,d_yle-areena.jpg/'
+        f'v1636098748/{image_id}.jpg'
     )

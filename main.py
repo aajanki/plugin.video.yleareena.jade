@@ -2,6 +2,7 @@ import sys
 import xbmcaddon  # type: ignore
 import xbmcgui  # type: ignore
 import xbmcplugin  # type: ignore
+from datetime import datetime
 from typing import Any, Optional, Sequence, Tuple
 from urllib.parse import urlencode, parse_qsl
 from resource.lib import areenaclient
@@ -38,18 +39,31 @@ def list_item_video(
     label: str,
     path: str,
     thumbnail: Optional[str] = None,
+    fanart: Optional[str] = None,
+    published: Optional[datetime] = None,
     action: str = 'play',
     is_live: bool = False
 ) -> Tuple[str, Any, bool]:
     query = urlencode({'action': action, 'path': path})
     item_url = f'{_url}?{query}'
     item = xbmcgui.ListItem(label)
+
     item.setProperty('IsPlayable', 'true')
     if is_live:
         item.setProperty('IsLive', 'true')
-    item.setInfo('video', {'title': label})
+
+    video_info = {'title': label}
+    if published is not None:
+        video_info['aired'] = published.strftime('%Y-%m-%d')
+    item.setInfo('video', video_info)
+
+    art = {}
     if thumbnail:
-        item.setArt({'thumb': thumbnail})
+        art['thumb'] = thumbnail
+    if fanart:
+        art['fanart'] = fanart
+    item.setArt(art)
+
     is_folder = False
     return (item_url, item, is_folder)
 
@@ -151,13 +165,15 @@ def show_links(links: Sequence[areenaclient.AreenaLink]) -> None:
                 item = list_item_series(
                     label=link.title,
                     series_id=series_id,
-                    thumbnail=link.thumbnail_url
+                    thumbnail=link.thumbnail,
                 )
             else:
                 item = list_item_video(
                     label=link.title,
                     path=link.homepage,
-                    thumbnail=link.thumbnail_url,
+                    thumbnail=link.thumbnail,
+                    fanart=link.fanart,
+                    published=link.published,
                     action='play_areenaurl'
                 )
         elif isinstance(link, areenaclient.SearchNavigationLink):

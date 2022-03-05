@@ -9,7 +9,6 @@ def test_search():
     assert len(streams) > 0
     assert all(x.homepage for x in streams)
     assert all(x.title not in [None, '', '???'] for x in streams)
-    assert all(x.thumbnail_url for x in streams)
 
     assert len(navigation) == 1
     assert navigation[0].keyword == 'Pasila'
@@ -33,7 +32,8 @@ def test_playlist():
     assert len(streams) > 0
     assert all(x.homepage for x in streams)
     assert all(x.title not in [None, '', '???'] for x in streams)
-    assert all(x.thumbnail_url for x in streams)
+    assert all(x.published is not None for x in streams)
+    assert all(x.thumbnail for x in streams)
     assert all(x.is_folder is False for x in streams)
 
     assert len(navigation) == 1

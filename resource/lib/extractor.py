@@ -1,6 +1,8 @@
 import json
+import re
 import requests
 from . import logger
+from datetime import datetime
 from typing import Any, Dict, Literal, Optional
 from urllib.parse import urlparse
 
@@ -70,7 +72,6 @@ def get_text(text_object: Dict[str, str], prefer_language: str = 'fi') -> Option
 def extract(url: str) -> Dict[str, Any]:
     logger.info(f'Extracting stream URL from {url}')
     pid = program_id_from_url(url)
-    logger.info(f'program ID = {pid}')
     metadata = metadata_for_pid(pid)
     if not metadata:
         return {}
@@ -129,3 +130,40 @@ def preview_url(pid: str) -> str:
         'language=fin&ssl=true&countryCode=FI&host=areenaylefi' \
         '&app_id=player_static_prod' \
         '&app_key=8930d72170e48303cf5f3867780d549b'
+
+
+def parse_publication_event_date(episode_metadata: Dict) -> Optional[datetime]:
+    """Parse the publication event from episode metadata.
+    
+    episode_metadata is an item from Areena API playlist response.
+
+    Returns the timestamp of the earliest publication of the episode.
+    Returns None if parsing fails for any reason.
+    """
+    events = episode_metadata.get('publicationEvent', [])
+
+    # Prefer "current" events
+    current_events = [e for e in events if e.get('temporalStatus') == 'currently']
+    selected_events = current_events or events
+
+    start_times = [e.get('startTime') for e in selected_events if e.get('startTime')]
+    if start_times:
+        first = min(start_times)
+        return _parse_areena_timestamp(first)
+    else:
+        return None
+
+
+def _parse_areena_timestamp(timestamp: str) -> Optional[datetime]:
+    # Python prior to 3.7 doesn't support a colon in the timezone
+    if re.search(r'\d\d:\d\d$', timestamp):
+        timestamp = timestamp[:-3] + timestamp[-2:]
+
+    return _strptime_or_none(timestamp, '%Y-%m-%dT%H:%M:%S%z')
+
+
+def _strptime_or_none(timestamp: str, fmt: str) -> Optional[datetime]:
+    try:
+        return datetime.strptime(timestamp, fmt)
+    except ValueError:
+        return None
