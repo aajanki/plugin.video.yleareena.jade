@@ -1,7 +1,9 @@
 import requests
 from . import extractor, logger
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 from urllib.parse import urlencode
+
+DEFAULT_PAGE_SIZE = 30
 
 
 class StreamLink():
@@ -18,13 +20,29 @@ class StreamLink():
         self.is_folder = is_folder
 
 
+class SearchNavigationLink():
+    def __init__(
+        self,
+        keyword: str,
+        offset: int,
+        page_size: int
+    ):
+        self.keyword = keyword
+        self.offset = offset
+        self.page_size = page_size
+
+
 def playlist(series_id: str, page_size: int = 20, offset: int = 0) -> List[StreamLink]:
     playlist_data = _load_playlist_page(series_id, page_size, offset)
     return _parse_playlist(playlist_data)
 
 
-def search(keyword: str) -> List[StreamLink]:
-    search_response = _get_search_results(keyword)
+def search(
+    keyword: str,
+    offset: int = 0,
+    page_size: int = DEFAULT_PAGE_SIZE
+) -> List[Union[StreamLink, SearchNavigationLink]]:
+    search_response = _get_search_results(keyword, offset, page_size)
     return _parse_search_results(search_response)
 
 
@@ -49,14 +67,14 @@ def _parse_playlist(playlist_data: List) -> List[StreamLink]:
     return links
 
 
-def _get_search_results(keyword: str) -> Dict:
-    r = requests.get(_search_url(keyword))
+def _get_search_results(keyword: str, offset: int, page_size: int) -> Dict:
+    r = requests.get(_search_url(keyword, offset=offset, page_size=page_size))
     r.raise_for_status()
     return r.json()
 
 
-def _parse_search_results(search_response: Dict) -> List[StreamLink]:
-    results = []
+def _parse_search_results(search_response: Dict) -> List[Union[StreamLink, SearchNavigationLink]]:
+    results: List[Union[StreamLink, SearchNavigationLink]] = []
     for item in search_response.get('data', []):
         uri = item.get('pointer', {}).get('uri')
         pointer_type = item.get('pointer', {}).get('type')
@@ -79,6 +97,23 @@ def _parse_search_results(search_response: Dict) -> List[StreamLink]:
             else:
                 logger.warning(f'Unknown pointer type: {pointer_type}')
 
+    # pagination links
+    meta = search_response.get('meta', {})
+    keyword = (
+        meta
+        .get('analytics', {})
+        .get('onReceive', {})
+        .get('comscore', {})
+        .get('yle_search_phrase', '')
+    )
+    offset = meta.get('offset', 0)
+    limit = meta.get('limit', DEFAULT_PAGE_SIZE)
+    count = meta.get('count', 0)
+    
+    if offset + limit < count:
+        next_offset = offset + limit
+        results.append(SearchNavigationLink(keyword, next_offset, DEFAULT_PAGE_SIZE))
+
     return results
 
 
@@ -98,7 +133,7 @@ def _playlist_url(series_id: str, ascending: bool = True, page_size: int = 20, o
     return f'https://areena.yle.fi/api/programs/v1/episodes/{series_id}.json?{q}'
 
 
-def _search_url(keyword: str) -> str:
+def _search_url(keyword: str, offset: int, page_size: int) -> str:
     q = urlencode({
         'app_id': 'areena_web_personal_prod',
         'app_key': '6c64d890124735033c50099ca25dd2fe',
@@ -109,8 +144,8 @@ def _search_url(keyword: str) -> str:
         'packages': 'true',
         'query': keyword,
         'service': 'tv',
-        'offset': 0,
-        'limit': 7,
+        'offset': offset,
+        'limit': page_size,
     })
     return f'https://areena.api.yle.fi/v1/ui/search?{q}'
 
