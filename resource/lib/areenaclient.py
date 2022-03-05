@@ -122,7 +122,7 @@ def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
                 results.append(StreamLink(
                     homepage=uri,
                     title=item.get('title'),
-                    thumbnail_url=_image_url_from_id(image_id),
+                    thumbnail_url=None,
                     is_folder=True
                 ))
             else:
