@@ -41,6 +41,7 @@ def list_item_video(
     thumbnail: Optional[str] = None,
     fanart: Optional[str] = None,
     published: Optional[datetime] = None,
+    description: Optional[str] = None,
     action: str = 'play',
     is_live: bool = False
 ) -> Tuple[str, Any, bool]:
@@ -55,6 +56,9 @@ def list_item_video(
     video_info = {'title': label}
     if published is not None:
         video_info['aired'] = published.strftime('%Y-%m-%d')
+    if description is not None:
+        video_info['plot'] = description
+        video_info['plotoutline'] = description
     item.setInfo('video', video_info)
 
     art = {}
@@ -174,6 +178,7 @@ def show_links(links: Sequence[areenaclient.AreenaLink]) -> None:
                     thumbnail=link.thumbnail,
                     fanart=link.fanart,
                     published=link.published,
+                    description=link.description,
                     action='play_areenaurl'
                 )
         elif isinstance(link, areenaclient.SearchNavigationLink):

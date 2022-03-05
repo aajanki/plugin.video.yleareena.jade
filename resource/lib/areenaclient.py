@@ -16,12 +16,14 @@ class StreamLink(AreenaLink):
         self,
         homepage: str,
         title: Optional[str],
+        description: Optional[str] = None,
         published: Optional[datetime] = None,
         image_id: Optional[str] = None,
         is_folder: bool = False
     ):
         self.homepage = homepage
         self.title = title or '???'
+        self.description = description
         self.published = published
         self.thumbnail: Optional[str] = None
         self.fanart: Optional[str] = None
@@ -88,6 +90,7 @@ def _parse_playlist(playlist_data: Dict, series_id: str) -> List[AreenaLink]:
             links.append(StreamLink(
                 homepage=f'yleareena://items/{pid}',
                 title=extractor.get_text(episode.get('title', {})),
+                description=extractor.get_text(episode.get('description', {})),
                 image_id=episode.get('image', {}).get('id'),
                 published=extractor.parse_publication_event_date(episode)
             ))
