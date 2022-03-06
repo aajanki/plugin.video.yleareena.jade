@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from resource.lib.extractor import get_text, parse_publication_event_date
+from resources.lib.extractor import get_text, parse_publication_event_date
 
 
 def test_get_text_default_is_fi():

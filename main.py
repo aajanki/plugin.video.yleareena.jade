@@ -5,10 +5,10 @@ import xbmcplugin
 from datetime import datetime
 from typing import Any, Optional, Sequence, Tuple
 from urllib.parse import urlencode, parse_qsl
-from resource.lib import areenaclient
-from resource.lib import logger
-from resource.lib.extractor import extract_media_url
-from resource.lib.resources import channel_icon
+from resources.lib import areenaclient
+from resources.lib import logger
+from resources.lib.extractor import extract_media_url
+from resources.lib.resources import channel_icon
 
 _url = sys.argv[0]
 _handle = int(sys.argv[1])

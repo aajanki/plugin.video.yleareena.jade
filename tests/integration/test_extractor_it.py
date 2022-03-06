@@ -1,4 +1,4 @@
-from resource.lib import extractor
+from resources.lib import extractor
 
 
 def test_extract_html5():

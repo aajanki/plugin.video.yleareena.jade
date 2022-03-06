@@ -1,4 +1,4 @@
-from resource.lib import areenaclient
+from resources.lib import areenaclient
 
 
 def test_search():
