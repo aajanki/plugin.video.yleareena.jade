@@ -49,8 +49,9 @@ class AreenaPreviewApiResponse():
 
 def extract_media_url(areena_page_url: str) -> Optional[str]:
     """Resolve playable video stream URL for a given Areena page URL (yleareena://items/1-2250636)."""
-    metadata = extract(areena_page_url)
-    return metadata.get('url')
+    logger.info(f'Extracting stream URL from {areena_page_url}')
+    pid = program_id_from_url(areena_page_url)
+    return media_url_for_pid(pid)
 
 
 def get_text(text_object: Dict[str, str], prefer_language: str = 'fi') -> Optional[str]:
@@ -69,22 +70,7 @@ def get_text(text_object: Dict[str, str], prefer_language: str = 'fi') -> Option
         return None
 
 
-def extract(url: str) -> Dict[str, Any]:
-    logger.info(f'Extracting stream URL from {url}')
-    pid = program_id_from_url(url)
-    metadata = metadata_for_pid(pid)
-    if not metadata:
-        return {}
-
-    logger.info(f'preview response: {json.dumps(metadata)}')
-
-    return metadata
-
-
-def metadata_for_pid(pid: str) -> Dict[str, Any]:
-    if not pid:
-        return {}
-
+def media_url_for_pid(pid: str) -> Optional[str]:
     preview = preview_parser(pid)
 
     if preview.is_expired():
@@ -93,9 +79,7 @@ def metadata_for_pid(pid: str) -> Dict[str, Any]:
     if preview.is_pending():
         logger.warning(f'Stream {pid} not yet published')
 
-    url = preview.manifest_url() or preview.media_url()
-
-    return {'url': url}
+    return preview.manifest_url() or preview.media_url()
 
 
 def program_id_from_url(url: str) -> str:
