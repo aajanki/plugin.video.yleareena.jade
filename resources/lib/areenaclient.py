@@ -19,6 +19,7 @@ class StreamLink(AreenaLink):
         description: Optional[str] = None,
         published: Optional[datetime] = None,
         image_id: Optional[str] = None,
+        image_version: Optional[str] = None,
         is_folder: bool = False
     ):
         self.homepage = homepage
@@ -28,8 +29,8 @@ class StreamLink(AreenaLink):
         self.thumbnail: Optional[str] = None
         self.fanart: Optional[str] = None
         if image_id is not None:
-            self.thumbnail = _thumbnail_url(image_id)
-            self.fanart = _fanart_url(image_id)
+            self.thumbnail = _thumbnail_url(image_id, image_version)
+            self.fanart = _fanart_url(image_id, image_version)
         self.is_folder = is_folder
 
 
@@ -86,12 +87,14 @@ def _parse_playlist(playlist_data: Dict, series_id: str) -> List[AreenaLink]:
     for episode in playlist_data.get('data', []):
         if 'id' in episode:
             pid = episode['id']
+            image_data = episode.get('image', {})
 
             links.append(StreamLink(
                 homepage=f'yleareena://items/{pid}',
                 title=extractor.get_text(episode.get('title', {})),
                 description=extractor.get_text(episode.get('description', {})),
-                image_id=episode.get('image', {}).get('id'),
+                image_id=image_data.get('id'),
+                image_version=image_data.get('version'),
                 published=extractor.parse_publication_event_date(episode)
             ))
 
@@ -121,12 +124,13 @@ def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
         pointer_type = item.get('pointer', {}).get('type')
 
         if item.get('type') == 'card' and uri:
-            image_id = item.get('image', {}).get('id')
             if pointer_type in ['program', 'clip']:
+                image_data = item.get('image', {})
                 results.append(StreamLink(
                     homepage=uri,
                     title=item.get('title'),
-                    image_id=image_id,
+                    image_id=image_data.get('id'),
+                    image_version=image_data.get('version')
                 ))
             elif pointer_type == 'series':
                 results.append(StreamLink(
@@ -192,15 +196,17 @@ def _search_url(keyword: str, offset: int, page_size: int) -> str:
     return f'https://areena.api.yle.fi/v1/ui/search?{q}'
 
 
-def _thumbnail_url(image_id: str) -> str:
+def _thumbnail_url(image_id: str, version: Optional[str] = None) -> str:
+    version = version or '1624522786'
     return (
         f'https://images.cdn.yle.fi/image/upload/w_320,dpr_1.0,fl_lossy,f_auto,'
-        f'q_auto,d_yle-elava-arkisto.jpg/v1624522786/{image_id}.jpg'
+        f'q_auto,d_yle-elava-arkisto.jpg/v{version}/{image_id}.jpg'
     )
 
 
-def _fanart_url(image_id: str) -> str:
+def _fanart_url(image_id: str, version: Optional[str] = None) -> str:
+    version = version or '1624522786'
     return (
         f'https://images.cdn.yle.fi/image/upload/w_auto,dpr_auto,fl_lossy,f_auto,'
-        f'q_auto,d_yle-elava-arkisto.jpg/v1624522786/{image_id}.jpg'
+        f'q_auto,d_yle-elava-arkisto.jpg/v{version}/{image_id}.jpg'
     )
