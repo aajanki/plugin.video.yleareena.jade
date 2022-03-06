@@ -7,7 +7,8 @@ from typing import Any, Optional, Sequence, Tuple
 from urllib.parse import urlencode, parse_qsl
 from resource.lib import areenaclient
 from resource.lib import logger
-from resource.lib import extractor
+from resource.lib.extractor import extract_media_url
+from resource.lib.resources import channel_icon
 
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
@@ -17,17 +18,16 @@ ls = _addon.getLocalizedString
 
 def show_menu() -> None:
     yle_tv1_live_url = 'https://yletv.akamaized.net/hls/live/622365/yletv1fin/index.m3u8'
-    yle_tv1_thumbnail_url = 'https://images.cdn.yle.fi/image/upload/c_fill,f_auto,h_64,q_auto:eco/v1643371700/yle-tv1_vt.png'
     yle_tv2_live_url = 'https://yletv.akamaized.net/hls/live/622366/yletv2fin/index.m3u8'
-    yle_tv2_thumbnail_url = 'https://images.cdn.yle.fi/image/upload/c_fill,f_auto,h_64,q_auto:eco/v1643371700/yle-tv2_vt.png'
     yle_teema_fem_live_url = 'https://yletv.akamaized.net/hls/live/622367/yletvteemafemfin/index.m3u8'
-    yle_teema_fem_thumbnail_url = 'https://images.cdn.yle.fi/image/upload/c_fill,f_auto,h_64,q_auto:eco/v1643371700/yle-teema-fem_vt.png'
 
     listing = [
-        list_item_video('YLE TV1', yle_tv1_live_url, yle_tv1_thumbnail_url, is_live=True),
-        list_item_video('YLE TV2', yle_tv2_live_url, yle_tv2_thumbnail_url, is_live=True),
-        list_item_video('YLE Teema/Fem', yle_teema_fem_live_url,
-                        yle_teema_fem_thumbnail_url, is_live=True),
+        list_item_video('Yle TV1', yle_tv1_live_url,
+                        icon=channel_icon(_addon, 'tv1'), is_live=True),
+        list_item_video('Yle TV2', yle_tv2_live_url,
+                        icon=channel_icon(_addon, 'tv2'), is_live=True),
+        list_item_video('Yle Teema & Fem', yle_teema_fem_live_url,
+                        icon=channel_icon(_addon, 'teemafem'), is_live=True),
         list_item_search_menu(),
     ]
 
@@ -39,6 +39,7 @@ def show_menu() -> None:
 def list_item_video(
     label: str,
     path: str,
+    icon: Optional[str] = None,
     thumbnail: Optional[str] = None,
     fanart: Optional[str] = None,
     published: Optional[datetime] = None,
@@ -65,6 +66,8 @@ def list_item_video(
     art = {}
     if thumbnail:
         art['thumb'] = thumbnail
+    if icon:
+        art['icon'] = icon
     if fanart:
         art['fanart'] = fanart
     item.setArt(art)
@@ -227,7 +230,7 @@ def router(paramstring: str) -> None:
         if action == 'play':
             play_media(params['path'])
         elif action == 'play_areenaurl':
-            media_url = extractor.extract_media_url(params['path'])
+            media_url = extract_media_url(params['path'])
             if media_url is None:
                 # TODO: error
                 logger.error(f'Failed to extract media URL for {params["path"]}')

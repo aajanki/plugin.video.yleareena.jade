@@ -11,6 +11,9 @@
         <provides>video</provides>
     </extension>
     <extension point="xbmc.addon.metadata">
+        <assets>
+            <icon>resource/icon.png</icon>
+        </assets>
         <language>en</language>
         <language>fi</language>
         <summary lang="en">Watch YLE Areena</summary>
