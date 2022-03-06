@@ -3,15 +3,17 @@
 
 ## Development
 
+### Linting and type checks
+
+```
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements-dev.txt
+pre-commit run --all-files
+```
+
 ### Integration and unit tests
 
 ```
 python3 -m pytest tests
-```
-
-### Linting
-
-```
-mypy main.py
-pyflakes3 *.py resource/lib/*.py
 ```

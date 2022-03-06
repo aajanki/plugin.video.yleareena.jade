@@ -1,6 +1,6 @@
 import json
 import re
-import requests
+import requests  # type: ignore
 from . import logger
 from datetime import datetime
 from typing import Any, Dict, Literal, Optional
@@ -134,7 +134,7 @@ def preview_url(pid: str) -> str:
 
 def parse_publication_event_date(episode_metadata: Dict) -> Optional[datetime]:
     """Parse the publication event from episode metadata.
-    
+
     episode_metadata is an item from Areena API playlist response.
 
     Returns the timestamp of the earliest publication of the episode.

@@ -1,7 +1,7 @@
 import sys
-import xbmcaddon  # type: ignore
-import xbmcgui  # type: ignore
-import xbmcplugin  # type: ignore
+import xbmcaddon
+import xbmcgui
+import xbmcplugin
 from datetime import datetime
 from typing import Any, Optional, Sequence, Tuple
 from urllib.parse import urlencode, parse_qsl
@@ -26,7 +26,8 @@ def show_menu() -> None:
     listing = [
         list_item_video('YLE TV1', yle_tv1_live_url, yle_tv1_thumbnail_url, is_live=True),
         list_item_video('YLE TV2', yle_tv2_live_url, yle_tv2_thumbnail_url, is_live=True),
-        list_item_video('YLE Teema/Fem', yle_teema_fem_live_url, yle_teema_fem_thumbnail_url, is_live=True),
+        list_item_video('YLE Teema/Fem', yle_teema_fem_live_url,
+                        yle_teema_fem_thumbnail_url, is_live=True),
         list_item_search_menu(),
     ]
 

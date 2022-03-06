@@ -1,4 +1,4 @@
-import requests
+import requests  # type: ignore
 from . import extractor, logger
 from datetime import datetime
 from typing import Dict, List, Optional
@@ -149,7 +149,7 @@ def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
     offset = meta.get('offset', 0)
     limit = meta.get('limit', DEFAULT_PAGE_SIZE)
     count = meta.get('count', 0)
-    
+
     next_offset = offset + limit
     if next_offset < count:
         results.append(SearchNavigationLink(keyword, next_offset, limit))
