@@ -192,15 +192,13 @@ def _search_url(keyword: str, offset: int, page_size: int) -> str:
 
 def _thumbnail_url(image_id: str) -> str:
     return (
-        f'https://images.cdn.yle.fi/image/upload/'
-        f'ar_1.0,c_fill,d_yle-areena.jpg,dpr_auto,f_auto,'
-        f'fl_lossy,q_auto:eco,w_65/v1644410176/{image_id}.jpg'
+        f'https://images.cdn.yle.fi/image/upload/w_320,dpr_1.0,fl_lossy,f_auto,'
+        f'q_auto,d_yle-elava-arkisto.jpg/v1624522786/{image_id}.jpg'
     )
 
 
 def _fanart_url(image_id: str) -> str:
     return (
-        f'https://images.cdn.yle.fi/image/upload/'
-        f'w_320,dpr_1.0,fl_lossy,f_auto,q_auto,d_yle-areena.jpg/'
-        f'v1636098748/{image_id}.jpg'
+        f'https://images.cdn.yle.fi/image/upload/w_auto,dpr_auto,fl_lossy,f_auto,'
+        f'q_auto,d_yle-elava-arkisto.jpg/v1624522786/{image_id}.jpg'
     )
