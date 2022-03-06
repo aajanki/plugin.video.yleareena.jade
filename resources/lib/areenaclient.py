@@ -134,6 +134,8 @@ def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
                     title=item.get('title'),
                     is_folder=True
                 ))
+            elif pointer_type == 'package':
+                logger.debug('Ignoring a search result of type "package"')
             else:
                 logger.warning(f'Unknown pointer type: {pointer_type}')
 
