@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.areenatest"
        version="0.0.1"
-       name="YLE Areena test"
-       provider-name="">
+       name="Yle Areena test"
+       provider-name="aajanki">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.25.1+matrix.1" />
@@ -14,13 +14,15 @@
         <assets>
             <icon>resources/media/icon.png</icon>
         </assets>
-        <language>en</language>
-        <language>fi</language>
-        <summary lang="en">Watch YLE Areena</summary>
-        <summary lang="fi">Katso YLE Areenaa</summary>
-        <description lang="en">YLE Areena plugin</description>
-        <description lang="fi">YLE Areena lisäosa</description>
-        <license>GPL 3.0</license>
+        <language>fi sv</language>
+        <summary lang="en_GB">Watch Yle Areena</summary>
+        <summary lang="fi_FI">Katso Yle Areenaa</summary>
+        <description lang="en_GB">Yle Areena plugin</description>
+        <description lang="fi_FI">Yle Areena -lisäosa</description>
+        <disclaimer lang="en_GB">This add-on is not endorsed by Yle. Some content is available only in Finland.</disclaimer>
+        <disclaimer lang="fi_FI">Tämä ei ole Ylen virallinen lisäosa. Osa sisällöstä näkyy vain Suomessa.</disclaimer>
+        <license>GPL-3.0-or-later</license>
         <source></source>
+        <email>antti.ajanki@iki.fi</email>
     </extension>
 </addon>
