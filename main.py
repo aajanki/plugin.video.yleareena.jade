@@ -13,7 +13,7 @@ from resources.lib.resources import channel_icon
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
 _addon = xbmcaddon.Addon()
-ls = _addon.getLocalizedString
+localized = _addon.getLocalizedString
 
 
 def show_menu() -> None:
@@ -99,7 +99,7 @@ def list_item_series(
 
 def list_item_search_menu() -> Tuple[str, Any, bool]:
     item_url = f'{_url}?action=search_menu'
-    item = xbmcgui.ListItem('Search')  # TODO translate
+    item = xbmcgui.ListItem(localized(30000))
     is_folder = True
     return (item_url, item, is_folder)
 
@@ -124,14 +124,14 @@ def list_item_search_pagination(
 
 def list_item_new_search() -> Tuple[str, Any, bool]:
     item_url = f'{_url}?action=search_input'
-    item = xbmcgui.ListItem('[B]New search[/B]')  # TODO translate
+    item = xbmcgui.ListItem('[B]' + localized(30001) + '[/B]')
     is_folder = True
     return (item_url, item, is_folder)
 
 
 def do_search_query() -> None:
     dialog = xbmcgui.Dialog()
-    keyword = dialog.input('Search', '', type=xbmcgui.INPUT_ALPHANUM)
+    keyword = dialog.input(localized(30000), '', type=xbmcgui.INPUT_ALPHANUM)
 
     if keyword:
         show_search_result_page(keyword)
@@ -187,14 +187,14 @@ def show_links(links: Sequence[areenaclient.AreenaLink]) -> None:
                 )
         elif isinstance(link, areenaclient.SearchNavigationLink):
             item = list_item_search_pagination(
-                label='Next page',
+                label=localized(30002),
                 keyword=link.keyword,
                 offset=link.offset,
                 page_size=link.page_size
             )
         elif isinstance(link, areenaclient.SeriesNavigationLink):
             item = list_item_series(
-                label='Next page',
+                label=localized(30002),
                 series_id=link.series_id,
                 offset=link.offset,
                 page_size=link.page_size
