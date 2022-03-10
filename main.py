@@ -226,8 +226,6 @@ def int_or_else(x: str, default: int) -> int:
 
 
 def router(paramstring: str) -> None:
-    logger.info(f'router @ {paramstring}')
-
     params = dict(parse_qsl(paramstring[1:]))
     if params:
         action = params.get('action')
