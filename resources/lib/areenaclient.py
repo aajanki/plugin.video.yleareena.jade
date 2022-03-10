@@ -1,7 +1,7 @@
 import requests  # type: ignore
 from . import logger
 from .extractor import duration_from_search_result, get_text, \
-    parse_publication_event_date, pt_duration_as_seconds
+    parse_finnish_date, parse_publication_event_date, pt_duration_as_seconds
 from datetime import datetime
 from typing import Dict, List, Optional
 from urllib.parse import urlencode
@@ -136,10 +136,14 @@ def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
             if pointer_type in ['program', 'clip']:
                 image_data = item.get('image', {})
                 duration = duration_from_search_result(item)
+                # The description field is empty or contains the publish date
+                published = parse_finnish_date(item.get('description'))
+
                 results.append(StreamLink(
                     homepage=uri,
                     title=item.get('title'),
                     duration_seconds=duration,
+                    published=published,
                     image_id=image_data.get('id'),
                     image_version=image_data.get('version')
                 ))

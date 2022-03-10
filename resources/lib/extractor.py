@@ -138,6 +138,21 @@ def parse_publication_event_date(episode_metadata: Dict) -> Optional[datetime]:
         return None
 
 
+def parse_finnish_date(date_string: str) -> Optional[datetime]:
+    """Parse a date string "14.05.2021" as a datetime object.
+
+    Returns None if date_string is not formatted like a date or parsing fails.
+    """
+    m = re.match(r'^(\d{2})\.(\d{2})\.(\d{4})$', date_string)
+    if m is None:
+        return None
+
+    try:
+        return datetime(int(m.group(3)), int(m.group(2)), int(m.group(1)))
+    except ValueError:
+        return None
+
+
 def _parse_areena_timestamp(timestamp: str) -> Optional[datetime]:
     # Python prior to 3.7 doesn't support a colon in the timezone
     if re.search(r'\d\d:\d\d$', timestamp):
