@@ -151,3 +151,29 @@ def _strptime_or_none(timestamp: str, fmt: str) -> Optional[datetime]:
         return datetime.strptime(timestamp, fmt)
     except ValueError:
         return None
+
+
+def duration_from_search_result(search_result: Dict) -> Optional[int]:
+    """Extract duration in seconds from a Areena search API result item."""
+    labels = search_result.get('labels', [])
+    duration_labels = [x.get('raw') for x in labels if x.get('type') == 'duration']
+    if duration_labels:
+        return pt_duration_as_seconds(duration_labels[0])
+    else:
+        return None
+
+
+def pt_duration_as_seconds(pt_duration: str) -> Optional[int]:
+    """Covnert PT duration string to integer seconds.
+
+    Examples of PT durations: "PT1832S" and "PT1H28M14S"
+    """
+    r = r'PT(?:(?P<hours>\d+)H)?(?:(?P<mins>\d+)M)?(?:(?P<secs>\d+)S)?$'
+    m = re.match(r, pt_duration)
+    if m:
+        hours = m.group('hours') or 0
+        mins = m.group('mins') or 0
+        secs = m.group('secs') or 0
+        return 3600 * int(hours) + 60 * int(mins) + int(secs)
+    else:
+        return None

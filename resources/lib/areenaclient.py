@@ -1,5 +1,7 @@
 import requests  # type: ignore
-from . import extractor, logger
+from . import logger
+from .extractor import duration_from_search_result, get_text, \
+    parse_publication_event_date, pt_duration_as_seconds
 from datetime import datetime
 from typing import Dict, List, Optional
 from urllib.parse import urlencode
@@ -17,6 +19,7 @@ class StreamLink(AreenaLink):
         homepage: str,
         title: Optional[str],
         description: Optional[str] = None,
+        duration_seconds: Optional[int] = None,
         published: Optional[datetime] = None,
         image_id: Optional[str] = None,
         image_version: Optional[str] = None,
@@ -25,6 +28,7 @@ class StreamLink(AreenaLink):
         self.homepage = homepage
         self.title = title or '???'
         self.description = description
+        self.duration_seconds = duration_seconds
         self.published = published
         self.thumbnail: Optional[str] = None
         self.fanart: Optional[str] = None
@@ -88,14 +92,19 @@ def _parse_playlist(playlist_data: Dict, series_id: str) -> List[AreenaLink]:
         if 'id' in episode:
             pid = episode['id']
             image_data = episode.get('image', {})
+            if 'duration' in episode:
+                duration = pt_duration_as_seconds(episode['duration'])
+            else:
+                duration = None
 
             links.append(StreamLink(
                 homepage=f'yleareena://items/{pid}',
-                title=extractor.get_text(episode.get('title', {})),
-                description=extractor.get_text(episode.get('description', {})),
+                title=get_text(episode.get('title', {})),
+                description=get_text(episode.get('description', {})),
+                duration_seconds=duration,
                 image_id=image_data.get('id'),
                 image_version=image_data.get('version'),
-                published=extractor.parse_publication_event_date(episode)
+                published=parse_publication_event_date(episode)
             ))
 
     # Pagination links
@@ -126,9 +135,11 @@ def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
         if item.get('type') == 'card' and uri:
             if pointer_type in ['program', 'clip']:
                 image_data = item.get('image', {})
+                duration = duration_from_search_result(item)
                 results.append(StreamLink(
                     homepage=uri,
                     title=item.get('title'),
+                    duration_seconds=duration,
                     image_id=image_data.get('id'),
                     image_version=image_data.get('version')
                 ))
