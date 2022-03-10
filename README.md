@@ -1,5 +1,13 @@
-# Areena plugin for Kodi
+# Areena Jade - Yle Areena plugin for Kodi
 
+[![Kodi version](https://img.shields.io/badge/kodi%20versions-19-blue)](https://kodi.tv/)
+[![License: GPLv3](https://img.shields.io/badge/License-GPLv3-yellow.svg)](https://opensource.org/licenses/GPL-3.0)
+
+Kodi plugin for watching video content from [Yle Areena](https://areena.yle.fi/tv). The plugin supports video-on-demand and live TV streams (but not audio streams).
+
+The plugin supports Kodi 19 Matrix.
+
+The plugin is not officially supported by Yle. Some content is available only in Finland.
 
 ## Development
 
@@ -9,6 +17,7 @@
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements-dev.txt
+
 pre-commit run --all-files
 ```
 
@@ -17,3 +26,7 @@ pre-commit run --all-files
 ```
 python3 -m pytest tests
 ```
+
+## License
+
+GPL v3

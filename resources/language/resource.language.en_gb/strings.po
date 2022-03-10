@@ -1,10 +1,10 @@
 # Kodi Media Center language file
-# Addon Name: plugin.video.areenatest
-# Addon id: plugin.video.areenatest
+# Addon Name: plugin.video.yleareena.jade
+# Addon id: plugin.video.yleareena.jade
 # Addon Provider: aajanki
 msgid ""
 msgstr ""
-"Project-Id-Version: plugin.video.areenatest 0.0.1\n"
+"Project-Id-Version: plugin.video.yleareena.jade 0.0.1\n"
 "Report-Msgid-Bugs-To: antti.ajanki@iki.fi\n"
 "POT-Creation-Date: 2022-03-09 20:05+0200\n"
 "PO-Revision-Date: 2022-03-09 20:06+0200\n"
