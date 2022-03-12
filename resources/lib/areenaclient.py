@@ -134,14 +134,23 @@ def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
 
         if item.get('type') == 'card' and uri:
             if pointer_type in ['program', 'clip']:
+                title = item.get('title')
                 image_data = item.get('image', {})
                 duration = duration_from_search_result(item)
-                # The description field is empty or contains the publish date
-                published = parse_finnish_date(item.get('description'))
+
+                # The description field is empty, contains the publish date or
+                # the series name. Try to first parse as date. If parsing fails,
+                # assume that it's the series name.
+                published = None
+                description = item.get('description')
+                if description:
+                    published = parse_finnish_date(description)
+                    if published is None and len(description) < 100:
+                        title = f'{description}: {title}'
 
                 results.append(StreamLink(
                     homepage=uri,
-                    title=item.get('title'),
+                    title=title,
                     duration_seconds=duration,
                     published=published,
                     image_id=image_data.get('id'),
