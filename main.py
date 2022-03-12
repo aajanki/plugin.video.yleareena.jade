@@ -20,7 +20,8 @@ localized = _addon.getLocalizedString
 def show_menu() -> None:
     yle_tv1_live_url = 'https://yletv.akamaized.net/hls/live/622365/yletv1fin/index.m3u8'
     yle_tv2_live_url = 'https://yletv.akamaized.net/hls/live/622366/yletv2fin/index.m3u8'
-    yle_teema_fem_live_url = 'https://yletv.akamaized.net/hls/live/622367/yletvteemafemfin/index.m3u8'
+    yle_teema_fem_live_url = \
+        'https://yletv.akamaized.net/hls/live/622367/yletvteemafemfin/index.m3u8'
 
     listing = [
         list_item_video('Yle TV1', yle_tv1_live_url,

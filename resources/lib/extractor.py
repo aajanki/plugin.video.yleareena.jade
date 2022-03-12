@@ -48,7 +48,9 @@ class AreenaPreviewApiResponse():
 
 
 def extract_media_url(areena_page_url: str) -> Optional[str]:
-    """Resolve playable video stream URL for a given Areena page URL (yleareena://items/1-2250636)."""
+    """Resolve playable video stream URL for a given Areena page URL.
+
+    Expected format of areena_page_url: yleareena://items/1-2250636"""
     logger.info(f'Extracting stream URL from {areena_page_url}')
     pid = program_id_from_url(areena_page_url)
     return media_url_for_pid(pid)
