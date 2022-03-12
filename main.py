@@ -9,6 +9,7 @@ from resources.lib import areenaclient
 from resources.lib import logger
 from resources.lib.extractor import extract_media_url
 from resources.lib.resources import channel_icon
+from resources.lib.searchhistory import get_search_history
 
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
@@ -137,6 +138,9 @@ def do_search_query() -> None:
     keyword = dialog.input(localized(30000), '', type=xbmcgui.INPUT_ALPHANUM)
 
     if keyword:
+        history = get_search_history(_addon)
+        history.update(keyword)
+
         show_search_result_page(keyword)
 
 
@@ -156,7 +160,12 @@ def show_search() -> None:
     listing = [
         list_item_new_search(),
     ]
-    # TODO: search history
+
+    history = get_search_history(_addon)
+    listing.extend(
+        list_item_search_pagination(x, x, offset=0, page_size=areenaclient.DEFAULT_PAGE_SIZE)
+        for x in history.list()
+    )
 
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_NONE)
