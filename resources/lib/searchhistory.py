@@ -30,7 +30,7 @@ class SearchHistory():
     def _make_key(self, text: str) -> int:
         # Use only the upper 64 bits of the MD5 hash, because the Storage class
         # (SQLite) supports at most 64 bit integers.
-        m = hashlib.md5(text.encode('utf-8'))
+        m = hashlib.md5(text.lower().encode('utf-8'))
         i = int(m.hexdigest()[:16], base=16)
 
         # translate to signed 64 bit int range
