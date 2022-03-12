@@ -181,11 +181,11 @@ def duration_from_search_result(search_result: Dict) -> Optional[int]:
 
 
 def pt_duration_as_seconds(pt_duration: str) -> Optional[int]:
-    """Covnert PT duration string to integer seconds.
+    """Convert PT duration string to integer seconds.
 
-    Examples of PT durations: "PT1832S" and "PT1H28M14S"
+    Examples of PT durations: "PT1832S", "PT1H28M14S", "PT23M49.600S"
     """
-    r = r'PT(?:(?P<hours>\d+)H)?(?:(?P<mins>\d+)M)?(?:(?P<secs>\d+)S)?$'
+    r = r'PT(?:(?P<hours>\d+)H)?(?:(?P<mins>\d+)M)?(?:(?P<secs>\d+)(?:\.\d+)?S)?$'
     m = re.match(r, pt_duration)
     if m:
         hours = m.group('hours') or 0

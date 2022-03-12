@@ -59,6 +59,7 @@ def test_event_date_parser_earliest_date():
 def test_pt_duration_as_seconds():
     assert pt_duration_as_seconds('PT1832S') == 1832
     assert pt_duration_as_seconds('PT1H28M14S') == 5294
+    assert pt_duration_as_seconds('PT23M49.600S') == 1429
 
 
 def test_pt_duration_invalid_input():
