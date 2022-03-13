@@ -27,3 +27,11 @@ msgstr ""
 msgctxt "#30002"
 msgid "Next page"
 msgstr ""
+
+msgctxt "#30003"
+msgid "Media not found"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Search results not found"
+msgstr ""

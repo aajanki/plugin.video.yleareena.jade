@@ -154,9 +154,11 @@ def show_search_result_page(
 ) -> None:
     logger.info(f'Executing search: "{keyword}", offset = {offset}, page_size = {page_size}')
 
-    # TODO: show an error message if no results are found
     searchresults = areenaclient.search(keyword, offset, page_size)
     show_links(searchresults)
+
+    if not searchresults:
+        show_notification(localized(30004))
 
 
 def show_search() -> None:
@@ -230,6 +232,10 @@ def play_media(url: str) -> None:
     xbmcplugin.setResolvedUrl(_handle, True, listitem=xbmcgui.ListItem(path=url))
 
 
+def show_notification(message: str, icon: str = xbmcgui.NOTIFICATION_INFO) -> None:
+    xbmcgui.Dialog().notification('Yle Areena', message, icon)
+
+
 def int_or_else(x: str, default: int) -> int:
     try:
         return int(x)
@@ -251,8 +257,8 @@ def router(paramstring: str) -> None:
         elif action == 'play_areenaurl':
             media_url = extract_media_url(params['path'])
             if media_url is None:
-                # TODO: error
                 logger.error(f'Failed to extract media URL for {params["path"]}')
+                show_notification(localized(30003), icon=xbmcgui.NOTIFICATION_ERROR)
                 return
 
             logger.info(f'Playing URL: {media_url}')
