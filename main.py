@@ -2,13 +2,13 @@ import sys
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
+import xbmcvfs
 from datetime import datetime
 from typing import Any, Optional, Sequence, Tuple
 from urllib.parse import urlencode, parse_qsl
 from resources.lib import areenaclient
 from resources.lib import logger
 from resources.lib.extractor import extract_media_url
-from resources.lib.resources import channel_icon
 from resources.lib.searchhistory import get_search_history
 
 _url = sys.argv[0]
@@ -25,11 +25,11 @@ def show_menu() -> None:
 
     listing = [
         list_item_video('Yle TV1', yle_tv1_live_url,
-                        icon=channel_icon(_addon, 'tv1'), is_live=True),
+                        icon=icon_path('tv1.png'), is_live=True),
         list_item_video('Yle TV2', yle_tv2_live_url,
-                        icon=channel_icon(_addon, 'tv2'), is_live=True),
+                        icon=icon_path('tv2.png'), is_live=True),
         list_item_video('Yle Teema & Fem', yle_teema_fem_live_url,
-                        icon=channel_icon(_addon, 'teemafem'), is_live=True),
+                        icon=icon_path('teemafem.png'), is_live=True),
         list_item_search_menu(),
     ]
 
@@ -105,6 +105,7 @@ def list_item_series(
 def list_item_search_menu() -> Tuple[str, Any, bool]:
     item_url = f'{_url}?action=search_menu'
     item = xbmcgui.ListItem(localized(30000))
+    item.setArt({'thumb': icon_path('search.png')})
     is_folder = True
     return (item_url, item, is_folder)
 
@@ -130,6 +131,7 @@ def list_item_search_pagination(
 def list_item_new_search() -> Tuple[str, Any, bool]:
     item_url = f'{_url}?action=search_input'
     item = xbmcgui.ListItem('[B]' + localized(30001) + '[/B]')
+    item.setArt({'thumb': icon_path('search.png')})
     is_folder = True
     return (item_url, item, is_folder)
 
@@ -233,6 +235,11 @@ def int_or_else(x: str, default: int) -> int:
         return int(x)
     except ValueError:
         return default
+
+
+def icon_path(filename: str) -> str:
+    return xbmcvfs.translatePath(
+        _addon.getAddonInfo('path') + f'/resources/media/{filename}')
 
 
 def router(paramstring: str) -> None:

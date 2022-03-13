@@ -13,6 +13,7 @@
     <extension point="xbmc.addon.metadata">
         <assets>
             <icon>resources/media/icon.png</icon>
+            <fanart>resources/media/fanart.png</fanart>
         </assets>
         <language>fi sv</language>
         <summary lang="en_GB">Watch Yle Areena</summary>
