@@ -108,7 +108,7 @@ class Storage():
     def _log_version(self) -> None:
         cursor = self._execute('SELECT SQLITE_VERSION()')
         sqlite_version = cursor.fetchone()[0]
-        logger.info(
+        logger.debug(
             f'Successfully connected to {self._filename} '
             f'(SQLite version {sqlite_version})'
         )

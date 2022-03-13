@@ -51,7 +51,7 @@ def extract_media_url(areena_page_url: str) -> Optional[str]:
     """Resolve playable video stream URL for a given Areena page URL.
 
     Expected format of areena_page_url: yleareena://items/1-2250636"""
-    logger.info(f'Extracting stream URL from {areena_page_url}')
+    logger.debug(f'Extracting stream URL from {areena_page_url}')
     pid = program_id_from_url(areena_page_url)
     return media_url_for_pid(pid)
 
@@ -79,7 +79,7 @@ def media_url_for_pid(pid: str) -> Optional[str]:
         logger.warning(f'Stream {pid} has expired')
 
     if preview.is_pending():
-        logger.warning(f'Stream {pid} not yet published')
+        logger.warning(f'Stream {pid} not yet been published')
 
     return preview.manifest_url() or preview.media_url()
 
@@ -105,8 +105,6 @@ def preview_parser(pid: str) -> AreenaPreviewApiResponse:
             preview_json = {}
         else:
             raise
-
-    logger.debug('preview data:' + json.dumps(preview_json))
 
     return AreenaPreviewApiResponse(preview_json)
 
