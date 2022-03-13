@@ -114,14 +114,19 @@ def list_item_search_pagination(
     label: str,
     keyword: str,
     offset: int,
-    page_size: int
+    page_size: int,
+    update_search_history: bool = False
 ) -> Tuple[str, Any, bool]:
-    query = urlencode({
+    qparams = {
         'action': 'search_page',
         'keyword': keyword,
         'offset': offset,
         'page_size': page_size
-    })
+    }
+    if update_search_history:
+        qparams['update_search_history'] = 'true'
+
+    query = urlencode(qparams)
     item_url = f'{_url}?{query}'
     item = xbmcgui.ListItem(label)
     is_folder = True
@@ -168,7 +173,10 @@ def show_search() -> None:
 
     history = get_search_history(_addon)
     listing.extend(
-        list_item_search_pagination(x, x, offset=0, page_size=areenaclient.DEFAULT_PAGE_SIZE)
+        list_item_search_pagination(x, x, offset=0,
+                                    page_size=areenaclient.DEFAULT_PAGE_SIZE,
+                                    update_search_history=True
+                                    )
         for x in history.list()
     )
 
@@ -272,9 +280,16 @@ def router(paramstring: str) -> None:
         elif action == 'search_input':
             do_search_query()
         elif action == 'search_page':
+            keyword = params.get('keyword', '')
             offset = int_or_else(params.get('offset', ''), 0)
             page_size = int_or_else(params.get('page_size', ''), areenaclient.DEFAULT_PAGE_SIZE)
-            show_search_result_page(params.get('keyword', ''), offset, page_size)
+
+            if params.get('update_search_history') and keyword:
+                # Move the selected keyword to the top of the search history
+                history = get_search_history(_addon)
+                history.update(keyword)
+
+            show_search_result_page(keyword, offset, page_size)
         else:
             logger.error(f"Unknown action: {action or '(missing)'}")
     else:
