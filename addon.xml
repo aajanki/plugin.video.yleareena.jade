@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.yleareena.jade"
-       version="0.0.1"
+       version="0.1.0"
        name="Yle Areena"
        provider-name="aajanki">
     <requires>
@@ -23,7 +23,7 @@
         <disclaimer lang="en_GB">This add-on is not endorsed by Yle. Some content is available only in Finland.</disclaimer>
         <disclaimer lang="fi_FI">Tämä ei ole Ylen virallinen lisäosa. Osa sisällöstä näkyy vain Suomessa.</disclaimer>
         <license>GPL-3.0-or-later</license>
-        <source></source>
+        <source>https://github.com/aajanki/plugin.video.yleareena.jade</source>
         <email>antti.ajanki@iki.fi</email>
     </extension>
 </addon>
