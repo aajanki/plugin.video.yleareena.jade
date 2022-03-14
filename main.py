@@ -237,7 +237,10 @@ def show_links(links: Sequence[areenaclient.AreenaLink]) -> None:
 
 
 def play_media(url: str) -> None:
-    xbmcplugin.setResolvedUrl(_handle, True, listitem=xbmcgui.ListItem(path=url))
+    listitem = xbmcgui.ListItem(path=url)
+    listitem.setProperty('inputstream', 'inputstream.adaptive')
+    listitem.setProperty('inputstream.adaptive.manifest_type', 'hls')
+    xbmcplugin.setResolvedUrl(_handle, True, listitem=listitem)
 
 
 def show_notification(message: str, icon: str = xbmcgui.NOTIFICATION_INFO) -> None:
