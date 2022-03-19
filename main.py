@@ -253,6 +253,8 @@ def show_links(links: Sequence[areenaclient.AreenaLink]) -> None:
 
 def play_media(url: str) -> None:
     listitem = xbmcgui.ListItem(path=url)
+    listitem.setMimeType('application/x-mpegurl')
+    listitem.setContentLookup(False)
     listitem.setProperty('inputstream', 'inputstream.adaptive')
     listitem.setProperty('inputstream.adaptive.manifest_type', 'hls')
     xbmcplugin.setResolvedUrl(_handle, True, listitem=listitem)
