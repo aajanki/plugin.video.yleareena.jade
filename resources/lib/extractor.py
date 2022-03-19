@@ -1,4 +1,3 @@
-import json
 import re
 import requests  # type: ignore
 from . import logger
