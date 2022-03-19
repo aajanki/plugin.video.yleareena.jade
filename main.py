@@ -52,7 +52,7 @@ def list_item_video(
 ) -> Tuple[str, Any, bool]:
     query = urlencode({'action': action, 'path': path})
     item_url = f'{_url}?{query}'
-    item = xbmcgui.ListItem(label)
+    item = xbmcgui.ListItem(label, offscreen=True)
 
     item.setProperty('IsPlayable', 'true')
     if is_live:
@@ -95,7 +95,7 @@ def list_item_series(
         'page_size': page_size
     })
     item_url = f'{_url}?{q}'
-    item = xbmcgui.ListItem(label)
+    item = xbmcgui.ListItem(label, offscreen=True)
     if thumbnail:
         item.setArt({'thumb': thumbnail})
     is_folder = True
@@ -104,7 +104,7 @@ def list_item_series(
 
 def list_item_search_menu() -> Tuple[str, Any, bool]:
     item_url = f'{_url}?action=search_menu'
-    item = xbmcgui.ListItem(localized(30000))
+    item = xbmcgui.ListItem(localized(30000), offscreen=True)
     item.setArt({'thumb': icon_path('search.png')})
     is_folder = True
     return (item_url, item, is_folder)
@@ -128,14 +128,14 @@ def list_item_search_pagination(
 
     query = urlencode(qparams)
     item_url = f'{_url}?{query}'
-    item = xbmcgui.ListItem(label)
+    item = xbmcgui.ListItem(label, offscreen=True)
     is_folder = True
     return (item_url, item, is_folder)
 
 
 def list_item_new_search() -> Tuple[str, Any, bool]:
     item_url = f'{_url}?action=search_input'
-    item = xbmcgui.ListItem('[B]' + localized(30001) + '[/B]')
+    item = xbmcgui.ListItem('[B]' + localized(30001) + '[/B]', offscreen=True)
     item.setArt({'thumb': icon_path('search.png')})
     is_folder = True
     return (item_url, item, is_folder)
