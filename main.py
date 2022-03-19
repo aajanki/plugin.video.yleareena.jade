@@ -85,19 +85,34 @@ def list_item_series(
     label: str,
     series_id: str,
     thumbnail: Optional[str] = None,
-    offset: int = 0,
-    page_size: int = areenaclient.DEFAULT_PAGE_SIZE
 ) -> Tuple[str, Any, bool]:
     q = urlencode({
         'action': 'series',
         'series_id': series_id,
-        'offset': offset,
-        'page_size': page_size
     })
     item_url = f'{_url}?{q}'
     item = xbmcgui.ListItem(label, offscreen=True)
     if thumbnail:
         item.setArt({'thumb': thumbnail})
+    is_folder = True
+    return (item_url, item, is_folder)
+
+
+def list_item_series_next_page(
+    label: str,
+    series_id: str,
+    offset: int = 0,
+    page_size: int = areenaclient.DEFAULT_PAGE_SIZE
+):
+    q = urlencode({
+        'action': 'series',
+        'series_id': series_id,
+        'offset': offset,
+        'page_size': page_size,
+    })
+    item_url = f'{_url}?{q}'
+    item = xbmcgui.ListItem(label, offscreen=True)
+    item.setProperty('SpecialSort', 'bottom')
     is_folder = True
     return (item_url, item, is_folder)
 
@@ -219,7 +234,7 @@ def show_links(links: Sequence[areenaclient.AreenaLink]) -> None:
                 page_size=link.page_size
             )
         elif isinstance(link, areenaclient.SeriesNavigationLink):
-            item = list_item_series(
+            item = list_item_series_next_page(
                 label=localized(30002),
                 series_id=link.series_id,
                 offset=link.offset,
