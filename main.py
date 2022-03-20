@@ -25,11 +25,11 @@ def show_menu() -> None:
 
     listing = [
         list_item_video('Yle TV1', yle_tv1_live_url,
-                        icon=icon_path('tv1.png'), is_live=True),
+                        thumbnail=icon_path('tv1.png'), is_live=True),
         list_item_video('Yle TV2', yle_tv2_live_url,
-                        icon=icon_path('tv2.png'), is_live=True),
+                        thumbnail=icon_path('tv2.png'), is_live=True),
         list_item_video('Yle Teema & Fem', yle_teema_fem_live_url,
-                        icon=icon_path('teemafem.png'), is_live=True),
+                        thumbnail=icon_path('teemafem.png'), is_live=True),
         list_item_search_menu(),
     ]
 
@@ -41,7 +41,6 @@ def show_menu() -> None:
 def list_item_video(
     label: str,
     path: str,
-    icon: Optional[str] = None,
     thumbnail: Optional[str] = None,
     fanart: Optional[str] = None,
     published: Optional[datetime] = None,
@@ -71,8 +70,6 @@ def list_item_video(
     art = {}
     if thumbnail:
         art['thumb'] = thumbnail
-    if icon:
-        art['icon'] = icon
     if fanart:
         art['fanart'] = fanart
     item.setArt(art)
