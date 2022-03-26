@@ -1,10 +1,10 @@
-from resources.lib import areenaclient
+from resources.lib import areena
 
 
 def test_search():
-    res = areenaclient.search('Pasila')
-    streams = [x for x in res if isinstance(x, areenaclient.StreamLink)]
-    navigation = [x for x in res if isinstance(x, areenaclient.SearchNavigationLink)]
+    res = areena.search('Pasila')
+    streams = [x for x in res if isinstance(x, areena.StreamLink)]
+    navigation = [x for x in res if isinstance(x, areena.SearchNavigationLink)]
 
     assert len(streams) > 0
     assert all(x.homepage for x in streams)
@@ -16,8 +16,8 @@ def test_search():
 
 
 def test_search_pagination():
-    res = areenaclient.search('Pasila', offset=30, page_size=10)
-    navigation = [x for x in res if isinstance(x, areenaclient.SearchNavigationLink)]
+    res = areena.search('Pasila', offset=30, page_size=10)
+    navigation = [x for x in res if isinstance(x, areena.SearchNavigationLink)]
 
     assert len(navigation) == 1
     assert navigation[0].keyword == 'Pasila'
@@ -25,9 +25,9 @@ def test_search_pagination():
 
 
 def test_playlist():
-    playlist = areenaclient.playlist('1-50552121', page_size=10)
-    streams = [x for x in playlist if isinstance(x, areenaclient.StreamLink)]
-    navigation = [x for x in playlist if isinstance(x, areenaclient.SeriesNavigationLink)]
+    playlist = areena.playlist('1-50552121', page_size=10)
+    streams = [x for x in playlist if isinstance(x, areena.StreamLink)]
+    navigation = [x for x in playlist if isinstance(x, areena.SeriesNavigationLink)]
 
     assert len(streams) > 0
     assert all(x.homepage for x in streams)
@@ -42,8 +42,8 @@ def test_playlist():
 
 
 def test_playlist_pagination():
-    playlist = areenaclient.playlist('1-50552121', offset=20, page_size=5)
-    navigation = [x for x in playlist if isinstance(x, areenaclient.SeriesNavigationLink)]
+    playlist = areena.playlist('1-50552121', offset=20, page_size=5)
+    navigation = [x for x in playlist if isinstance(x, areena.SeriesNavigationLink)]
 
     assert len(navigation) == 1
     assert navigation[0].series_id == '1-50552121'

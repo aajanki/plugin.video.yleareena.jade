@@ -5,7 +5,7 @@ import xbmcplugin
 from datetime import datetime
 from typing import Any, Optional, Sequence, Tuple
 from urllib.parse import urlencode, parse_qsl
-from resources.lib import areenaclient
+from resources.lib import areena
 from resources.lib import logger
 from resources.lib.extractor import extract_media_url
 from resources.lib.searchhistory import get_search_history
@@ -21,19 +21,19 @@ def show_menu() -> None:
     listing = [
         list_item_video(
             'Yle TV1',
-            areenaclient.live_tv_manifest_url('622365', 'yletv1fin'),
+            areena.live_tv_manifest_url('622365', 'yletv1fin'),
             thumbnail=icon_path('tv1.png'),
             is_live=True
         ),
         list_item_video(
             'Yle TV2',
-            areenaclient.live_tv_manifest_url('622366', 'yletv2fin'),
+            areena.live_tv_manifest_url('622366', 'yletv2fin'),
             thumbnail=icon_path('tv2.png'),
             is_live=True
         ),
         list_item_video(
             'Yle Teema & Fem',
-            areenaclient.live_tv_manifest_url('622367', 'yletvteemafemfin'),
+            areena.live_tv_manifest_url('622367', 'yletvteemafemfin'),
             thumbnail=icon_path('teemafem.png'),
             is_live=True
         ),
@@ -108,7 +108,7 @@ def list_item_series_next_page(
     label: str,
     series_id: str,
     offset: int = 0,
-    page_size: int = areenaclient.DEFAULT_PAGE_SIZE
+    page_size: int = areena.DEFAULT_PAGE_SIZE
 ):
     q = urlencode({
         'action': 'series',
@@ -179,11 +179,11 @@ def do_search_query() -> None:
 def show_search_result_page(
     keyword: str,
     offset: int = 0,
-    page_size: int = areenaclient.DEFAULT_PAGE_SIZE
+    page_size: int = areena.DEFAULT_PAGE_SIZE
 ) -> None:
     logger.info(f'Executing search: "{keyword}", offset = {offset}, page_size = {page_size}')
 
-    searchresults = areenaclient.search(keyword, offset, page_size)
+    searchresults = areena.search(keyword, offset, page_size)
     show_links(searchresults)
 
     if not searchresults:
@@ -201,7 +201,7 @@ def show_search() -> None:
             label,
             label,
             offset=0,
-            page_size=areenaclient.DEFAULT_PAGE_SIZE,
+            page_size=areena.DEFAULT_PAGE_SIZE,
             update_search_history=True
         )
         for label in history.list()
@@ -213,13 +213,13 @@ def show_search() -> None:
 
 
 def show_series(series_id: str, offset: int, page_size: int) -> None:
-    show_links(areenaclient.playlist(series_id, offset, page_size))
+    show_links(areena.playlist(series_id, offset, page_size))
 
 
-def show_links(links: Sequence[areenaclient.AreenaLink]) -> None:
+def show_links(links: Sequence[areena.AreenaLink]) -> None:
     listing = []
     for link in links:
-        if isinstance(link, areenaclient.StreamLink):
+        if isinstance(link, areena.StreamLink):
             if link.is_folder:
                 series_id = link.homepage.rsplit('/', 1)[-1]
                 item = list_item_series(
@@ -238,7 +238,7 @@ def show_links(links: Sequence[areenaclient.AreenaLink]) -> None:
                     duration=link.duration_seconds,
                     action='play_areenaurl'
                 )
-        elif isinstance(link, areenaclient.SearchNavigationLink):
+        elif isinstance(link, areena.SearchNavigationLink):
             item = list_item_search_pagination(
                 label=localized(30002),
                 keyword=link.keyword,
@@ -246,7 +246,7 @@ def show_links(links: Sequence[areenaclient.AreenaLink]) -> None:
                 page_size=link.page_size,
                 special_sort='bottom'
             )
-        elif isinstance(link, areenaclient.SeriesNavigationLink):
+        elif isinstance(link, areena.SeriesNavigationLink):
             item = list_item_series_next_page(
                 label=localized(30002),
                 series_id=link.series_id,
@@ -291,7 +291,7 @@ def router(paramstring: str) -> None:
             play_media(_handle, media_url.url, media_url.manifest_type, media_url.headers)
         elif action == 'series':
             offset = int_or_else(params.get('offset', ''), 0)
-            page_size = int_or_else(params.get('page_size', ''), areenaclient.DEFAULT_PAGE_SIZE)
+            page_size = int_or_else(params.get('page_size', ''), areena.DEFAULT_PAGE_SIZE)
             show_series(params['series_id'], offset, page_size)
         elif action == 'search_menu':
             show_search()
@@ -300,7 +300,7 @@ def router(paramstring: str) -> None:
         elif action == 'search_page':
             keyword = params.get('keyword', '')
             offset = int_or_else(params.get('offset', ''), 0)
-            page_size = int_or_else(params.get('page_size', ''), areenaclient.DEFAULT_PAGE_SIZE)
+            page_size = int_or_else(params.get('page_size', ''), areena.DEFAULT_PAGE_SIZE)
 
             if params.get('update_search_history') and keyword:
                 # Move the selected keyword to the top of the search history
