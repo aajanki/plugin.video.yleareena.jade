@@ -2,7 +2,6 @@ import sys
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
-import xbmcvfs
 from datetime import datetime
 from typing import Any, Optional, Sequence, Tuple
 from urllib.parse import urlencode, parse_qsl
@@ -10,6 +9,7 @@ from resources.lib import areenaclient
 from resources.lib import logger
 from resources.lib.extractor import extract_media_url
 from resources.lib.searchhistory import get_search_history
+from resources.lib.kodi import play_media, show_notification, icon_path
 
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
@@ -260,23 +260,6 @@ def show_links(links: Sequence[areenaclient.AreenaLink]) -> None:
     xbmcplugin.endOfDirectory(_handle)
 
 
-def play_media(url: str, manifest_type: str, headers: Optional[dict] = None) -> None:
-    listitem = xbmcgui.ListItem(path=url)
-    listitem.setMimeType('application/x-mpegurl')
-    listitem.setContentLookup(False)
-    listitem.setProperty('inputstream', 'inputstream.adaptive')
-    listitem.setProperty('inputstream.adaptive.manifest_type', manifest_type)
-    if headers:
-        headers_string = urlencode(headers)
-        listitem.setProperty('inputstream.adaptive.stream_headers', headers_string)
-
-    xbmcplugin.setResolvedUrl(_handle, True, listitem=listitem)
-
-
-def show_notification(message: str, icon: str = xbmcgui.NOTIFICATION_INFO) -> None:
-    xbmcgui.Dialog().notification('Yle Areena', message, icon)
-
-
 def int_or_else(x: str, default: int) -> int:
     try:
         return int(x)
@@ -284,17 +267,12 @@ def int_or_else(x: str, default: int) -> int:
         return default
 
 
-def icon_path(filename: str) -> str:
-    return xbmcvfs.translatePath(
-        _addon.getAddonInfo('path') + f'/resources/media/{filename}')
-
-
 def router(paramstring: str) -> None:
     params = dict(parse_qsl(paramstring[1:]))
     if params:
         action = params.get('action')
         if action == 'play':
-            play_media(params['path'], params['manifest_type'])
+            play_media(_handle, params['path'], params['manifest_type'])
         elif action == 'play_areenaurl':
             media_url = extract_media_url(params['path'])
             if media_url is None:
@@ -303,7 +281,7 @@ def router(paramstring: str) -> None:
                 return
 
             logger.info(f'Playing URL: {media_url.url}')
-            play_media(media_url.url, media_url.manifest_type, media_url.headers)
+            play_media(_handle, media_url.url, media_url.manifest_type, media_url.headers)
         elif action == 'series':
             offset = int_or_else(params.get('offset', ''), 0)
             page_size = int_or_else(params.get('page_size', ''), areenaclient.DEFAULT_PAGE_SIZE)
