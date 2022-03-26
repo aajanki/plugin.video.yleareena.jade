@@ -62,6 +62,10 @@ class SeriesNavigationLink(AreenaLink):
         self.page_size = page_size
 
 
+def live_tv_manifest_url(stream_id, stream_name):
+    return f'https://yletv.akamaized.net/hls/live/{stream_id}/{stream_name}/index.m3u8'
+
+
 def playlist(
     series_id: str,
     offset: int = 0,

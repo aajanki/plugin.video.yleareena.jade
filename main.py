@@ -18,18 +18,25 @@ localized = _addon.getLocalizedString
 
 
 def show_menu() -> None:
-    yle_tv1_live_url = 'https://yletv.akamaized.net/hls/live/622365/yletv1fin/index.m3u8'
-    yle_tv2_live_url = 'https://yletv.akamaized.net/hls/live/622366/yletv2fin/index.m3u8'
-    yle_teema_fem_live_url = \
-        'https://yletv.akamaized.net/hls/live/622367/yletvteemafemfin/index.m3u8'
-
     listing = [
-        list_item_video('Yle TV1', yle_tv1_live_url,
-                        thumbnail=icon_path('tv1.png'), is_live=True),
-        list_item_video('Yle TV2', yle_tv2_live_url,
-                        thumbnail=icon_path('tv2.png'), is_live=True),
-        list_item_video('Yle Teema & Fem', yle_teema_fem_live_url,
-                        thumbnail=icon_path('teemafem.png'), is_live=True),
+        list_item_video(
+            'Yle TV1',
+            areenaclient.live_tv_manifest_url('622365', 'yletv1fin'),
+            thumbnail=icon_path('tv1.png'),
+            is_live=True
+        ),
+        list_item_video(
+            'Yle TV2',
+            areenaclient.live_tv_manifest_url('622366', 'yletv2fin'),
+            thumbnail=icon_path('tv2.png'),
+            is_live=True
+        ),
+        list_item_video(
+            'Yle Teema & Fem',
+            areenaclient.live_tv_manifest_url('622367', 'yletvteemafemfin'),
+            thumbnail=icon_path('teemafem.png'),
+            is_live=True
+        ),
         list_item_search_menu(),
     ]
 
