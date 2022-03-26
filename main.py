@@ -60,6 +60,7 @@ def list_item_video(
 
     video_info = {'title': label}
     if published is not None:
+        video_info['date'] = published.strftime('%d.%m.%Y')
         video_info['aired'] = published.strftime('%Y-%m-%d')
     if description is not None:
         video_info['plot'] = description
@@ -128,7 +129,8 @@ def list_item_search_pagination(
     keyword: str,
     offset: int,
     page_size: int,
-    update_search_history: bool = False
+    update_search_history: bool = False,
+    special_sort: Optional[str] = None
 ) -> Tuple[str, Any, bool]:
     qparams = {
         'action': 'search_page',
@@ -142,6 +144,8 @@ def list_item_search_pagination(
     query = urlencode(qparams)
     item_url = f'{_url}?{query}'
     item = xbmcgui.ListItem(label, offscreen=True)
+    if special_sort:
+        item.setProperty('SpecialSort', special_sort)
     is_folder = True
     return (item_url, item, is_folder)
 
@@ -186,11 +190,14 @@ def show_search() -> None:
 
     history = get_search_history(_addon)
     listing.extend(
-        list_item_search_pagination(x, x, offset=0,
-                                    page_size=areenaclient.DEFAULT_PAGE_SIZE,
-                                    update_search_history=True
-                                    )
-        for x in history.list()
+        list_item_search_pagination(
+            label,
+            label,
+            offset=0,
+            page_size=areenaclient.DEFAULT_PAGE_SIZE,
+            update_search_history=True
+        )
+        for label in history.list()
     )
 
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
@@ -229,7 +236,8 @@ def show_links(links: Sequence[areenaclient.AreenaLink]) -> None:
                 label=localized(30002),
                 keyword=link.keyword,
                 offset=link.offset,
-                page_size=link.page_size
+                page_size=link.page_size,
+                special_sort='bottom'
             )
         elif isinstance(link, areenaclient.SeriesNavigationLink):
             item = list_item_series_next_page(
@@ -245,7 +253,10 @@ def show_links(links: Sequence[areenaclient.AreenaLink]) -> None:
         listing.append(item)
 
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
-    xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_NONE)
+    xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_UNSORTED)
+    xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_DATE)
+    xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL)
+    xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_DURATION)
     xbmcplugin.endOfDirectory(_handle)
 
 
