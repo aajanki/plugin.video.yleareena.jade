@@ -49,7 +49,8 @@ def list_item_video(
     action: str = 'play',
     is_live: bool = False
 ) -> Tuple[str, Any, bool]:
-    query = urlencode({'action': action, 'path': path})
+    manifest_type = 'hls' if '.m3u8' in path else 'mpd'
+    query = urlencode({'action': action, 'path': path, 'manifest_type': manifest_type})
     item_url = f'{_url}?{query}'
     item = xbmcgui.ListItem(label, offscreen=True)
 
@@ -248,12 +249,16 @@ def show_links(links: Sequence[areenaclient.AreenaLink]) -> None:
     xbmcplugin.endOfDirectory(_handle)
 
 
-def play_media(url: str) -> None:
+def play_media(url: str, manifest_type: str, headers: Optional[dict] = None) -> None:
     listitem = xbmcgui.ListItem(path=url)
     listitem.setMimeType('application/x-mpegurl')
     listitem.setContentLookup(False)
     listitem.setProperty('inputstream', 'inputstream.adaptive')
-    listitem.setProperty('inputstream.adaptive.manifest_type', 'hls')
+    listitem.setProperty('inputstream.adaptive.manifest_type', manifest_type)
+    if headers:
+        headers_string = urlencode(headers)
+        listitem.setProperty('inputstream.adaptive.stream_headers', headers_string)
+
     xbmcplugin.setResolvedUrl(_handle, True, listitem=listitem)
 
 
@@ -278,7 +283,7 @@ def router(paramstring: str) -> None:
     if params:
         action = params.get('action')
         if action == 'play':
-            play_media(params['path'])
+            play_media(params['path'], params['manifest_type'])
         elif action == 'play_areenaurl':
             media_url = extract_media_url(params['path'])
             if media_url is None:
@@ -286,8 +291,8 @@ def router(paramstring: str) -> None:
                 show_notification(localized(30003), icon=xbmcgui.NOTIFICATION_ERROR)
                 return
 
-            logger.info(f'Playing URL: {media_url}')
-            play_media(media_url)
+            logger.info(f'Playing URL: {media_url.url}')
+            play_media(media_url.url, media_url.manifest_type, media_url.headers)
         elif action == 'series':
             offset = int_or_else(params.get('offset', ''), 0)
             page_size = int_or_else(params.get('page_size', ''), areenaclient.DEFAULT_PAGE_SIZE)

@@ -1,6 +1,7 @@
 import re
 import requests  # type: ignore
-from . import logger
+from . import logger, kaltura
+from .kaltura import ManifestUrl
 from datetime import datetime
 from typing import Any, Dict, Literal, Optional
 from urllib.parse import urlparse
@@ -10,11 +11,25 @@ class AreenaPreviewApiResponse():
     def __init__(self, data: Dict[str, Any]) -> None:
         self.preview = data or {}
 
-    def manifest_url(self) -> Optional[str]:
-        return self.ongoing().get('manifest_url')
+    def media_id(self) -> Optional[str]:
+        if self.is_live():
+            return self.ongoing().get('adobe', {}).get('yle_media_id')
+        else:
+            return self.ongoing().get('media_id')
 
-    def media_url(self) -> Optional[str]:
-        return self.ongoing().get('media_url')
+    def manifest_url(self) -> Optional[ManifestUrl]:
+        url = self.ongoing().get('manifest_url')
+        if url is None:
+            return None
+
+        return ManifestUrl(url, 'hls', source_name='preview manifest URL')
+
+    def media_url(self) -> Optional[ManifestUrl]:
+        url = self.ongoing().get('media_url')
+        if url is None:
+            return None
+
+        return ManifestUrl(url, 'hls', source_name='preview media URL')
 
     def media_type(self) -> Optional[Literal['audio', 'video']]:
         if not self.preview:
@@ -40,13 +55,13 @@ class AreenaPreviewApiResponse():
     def ongoing(self) -> Dict[str, Any]:
         data = self.preview.get('data', {})
         return (data.get('ongoing_ondemand') or
-                data.get('ongoing_event', {}) or
-                data.get('ongoing_channel', {}) or
+                data.get('ongoing_event') or
+                data.get('ongoing_channel') or
                 data.get('pending_event') or
                 {})
 
 
-def extract_media_url(areena_page_url: str) -> Optional[str]:
+def extract_media_url(areena_page_url: str) -> Optional[ManifestUrl]:
     """Resolve playable video stream URL for a given Areena page URL.
 
     Expected format of areena_page_url: yleareena://items/1-2250636"""
@@ -71,7 +86,7 @@ def get_text(text_object: Dict[str, str], prefer_language: str = 'fi') -> Option
         return None
 
 
-def media_url_for_pid(pid: str) -> Optional[str]:
+def media_url_for_pid(pid: str) -> Optional[ManifestUrl]:
     preview = preview_parser(pid)
 
     if preview.is_expired():
@@ -80,7 +95,22 @@ def media_url_for_pid(pid: str) -> Optional[str]:
     if preview.is_pending():
         logger.warning(f'Stream {pid} not yet been published')
 
-    return preview.manifest_url() or preview.media_url()
+    media_id = preview.media_id()
+    if media_id is not None:
+        manifest_url = kaltura.manifest_url(media_id)
+    else:
+        manifest_url = None
+
+    manifest_url = manifest_url or preview.manifest_url() or preview.media_url()
+    if manifest_url is None:
+        return None
+
+    logger.info(
+        f'Manifest URL {manifest_url.manifest_type} '
+        f'from {manifest_url.debug_source_name}'
+    )
+
+    return manifest_url
 
 
 def program_id_from_url(url: str) -> str:
