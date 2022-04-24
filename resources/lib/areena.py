@@ -192,19 +192,19 @@ def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
 
 
 def _playlist_url(series_id: str, ascending: bool, offset: int, page_size: int) -> str:
+    # Reference: https://docs.api.yle.fi/api/programs-api-v3
     sort_order = 'asc' if ascending else 'desc'
-    query = {
-        'type': 'program',
-        'availability': '',
+    q = urlencode({
+        'availability': 'current',
+        'program_type': 'program',
+        'offset': str(offset),
         'limit': str(page_size),
         'order': f'natural:{sort_order}',
         'app_id': 'areena_web_frontend_prod',
         'app_key': '4622a8f8505bb056c956832a70c105d4',
-    }
-    if offset:
-        query['offset'] = str(offset)
-    q = urlencode(query)
+    })
     return f'https://programs.api.yle.fi/v3/schema/v1/series/{series_id}/episodes?{q}'
+
 
 def _search_url(keyword: str, offset: int, page_size: int) -> str:
     q = urlencode({
