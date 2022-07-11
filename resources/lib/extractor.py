@@ -70,22 +70,6 @@ def extract_media_url(areena_page_url: str) -> Optional[ManifestUrl]:
     return media_url_for_pid(pid)
 
 
-def get_text(text_object: Dict[str, str], prefer_language: str = 'fi') -> Optional[str]:
-    """Extract translated message from Areena API localized text object.
-
-    Example text_object: {"fi": "teksti suomeksi", "sv": "samma på svenska"}
-
-    Return text in prefer_language if available. Otherwise, return an arbitrary
-    language. If text_object is empty, return None.
-    """
-    if prefer_language in text_object:
-        return text_object[prefer_language]
-    elif text_object:
-        return list(text_object.values())[0]
-    else:
-        return None
-
-
 def media_url_for_pid(pid: str) -> Optional[ManifestUrl]:
     preview = preview_parser(pid)
 
