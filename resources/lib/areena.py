@@ -2,7 +2,7 @@ import requests  # type: ignore
 from . import logger
 from .playlist import download_playlist, parse_playlist_seasons
 from .extractor import duration_from_search_result, parse_finnish_date
-from dataclasses import dataclass
+from dataclasses import dataclass, InitVar
 from datetime import datetime
 from typing import Dict, List, Optional
 from urllib.parse import urlencode
@@ -10,45 +10,39 @@ from urllib.parse import urlencode
 DEFAULT_PAGE_SIZE = 30
 
 
-class AreenaLink():
+class AreenaLink:
     pass
 
 
+@dataclass
 class StreamLink(AreenaLink):
-    def __init__(
-        self,
-        homepage: str,
-        title: Optional[str],
-        description: Optional[str] = None,
-        duration_seconds: Optional[int] = None,
-        published: Optional[datetime] = None,
-        image_id: Optional[str] = None,
-        image_version: Optional[str] = None,
-        is_folder: bool = False
-    ):
-        self.homepage = homepage
-        self.title = title or '???'
-        self.description = description
-        self.duration_seconds = duration_seconds
-        self.published = published
-        self.thumbnail: Optional[str] = None
-        self.fanart: Optional[str] = None
+    homepage: str
+    title: str
+    description: Optional[str] = None
+    duration_seconds: Optional[int] = None
+    published: Optional[datetime] = None
+    image_id: InitVar[Optional[str]] = None
+    image_version: InitVar[Optional[str]] = None
+    is_folder: bool = False
+    thumbnail: Optional[str] = None
+    fanart: Optional[str] = None
+
+    def __post_init__(self, image_id, image_version):
+        if not self.title:
+            self.title = '???'
+
         if image_id is not None:
-            self.thumbnail = _thumbnail_url(image_id, image_version)
-            self.fanart = _fanart_url(image_id, image_version)
-        self.is_folder = is_folder
+            if self.thumbnail is None:
+                self.thumbnail = _thumbnail_url(image_id, image_version)
+            if self.fanart is None:
+                self.fanart = _fanart_url(image_id, image_version)
 
 
+@dataclass(frozen=True)
 class SearchNavigationLink(AreenaLink):
-    def __init__(
-        self,
-        keyword: str,
-        offset: int,
-        page_size: int
-    ):
-        self.keyword = keyword
-        self.offset = offset
-        self.page_size = page_size
+    keyword: str
+    offset: int
+    page_size: int
 
 
 @dataclass(frozen=True)

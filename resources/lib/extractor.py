@@ -7,7 +7,7 @@ from typing import Any, Dict, Literal, Optional
 from urllib.parse import urlparse
 
 
-class AreenaPreviewApiResponse():
+class AreenaPreviewApiResponse:
     def __init__(self, data: Dict[str, Any]) -> None:
         self.preview = data or {}
 
@@ -22,14 +22,14 @@ class AreenaPreviewApiResponse():
         if url is None:
             return None
 
-        return ManifestUrl(url, 'hls', source_name='preview manifest URL')
+        return ManifestUrl(url, 'hls', debug_source_name='preview manifest URL')
 
     def media_url(self) -> Optional[ManifestUrl]:
         url = self.ongoing().get('media_url')
         if url is None:
             return None
 
-        return ManifestUrl(url, 'hls', source_name='preview media URL')
+        return ManifestUrl(url, 'hls', debug_source_name='preview media URL')
 
     def media_type(self) -> Optional[Literal['audio', 'video']]:
         if not self.preview:

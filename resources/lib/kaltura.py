@@ -1,6 +1,7 @@
 import json
 import requests  # type: ignore
 from . import logger
+from dataclasses import dataclass
 from typing import Optional
 
 _client_tag = 'html5:v1.7.1'
@@ -8,19 +9,12 @@ _partner_id = '1955031'
 _widget_id = '_1955031'
 
 
-class ManifestUrl():
-    def __init__(
-        self,
-        url: str,
-        manifest_type: str,
-        *,
-        headers: Optional[dict] = None,
-        source_name: Optional[str] = None
-    ):
-        self.url = url
-        self.manifest_type = manifest_type
-        self.headers = headers
-        self.debug_source_name = source_name
+@dataclass(frozen=True)
+class ManifestUrl:
+    url: str
+    manifest_type: str
+    headers: Optional[dict] = None
+    debug_source_name: Optional[str] = None
 
 
 def manifest_url(media_id: str) -> Optional[ManifestUrl]:
@@ -36,11 +30,11 @@ def manifest_url(media_id: str) -> Optional[ManifestUrl]:
     # Prefer MPEG-DASH, fallback to HLS if DASH is not available
     url = _manifest_from_context(context, 'mpegdash', referrer)
     if url is not None:
-        return ManifestUrl(url, 'mpd', headers=headers, source_name='Kaltura')
+        return ManifestUrl(url, 'mpd', headers=headers, debug_source_name='Kaltura')
 
     url = _manifest_from_context(context, 'applehttp', referrer)
     if url is not None:
-        return ManifestUrl(url, 'hls', headers=headers, source_name='Kaltura')
+        return ManifestUrl(url, 'hls', headers=headers, debug_source_name='Kaltura')
 
     return None
 
