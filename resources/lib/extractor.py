@@ -145,28 +145,6 @@ def preview_url(pid: str) -> str:
         '&app_key=8930d72170e48303cf5f3867780d549b'
 
 
-def parse_publication_event_date(episode_metadata: Dict) -> Optional[datetime]:
-    """Parse the publication event from episode metadata.
-
-    episode_metadata is an item from Areena API playlist response.
-
-    Returns the timestamp of the earliest publication of the episode.
-    Returns None if parsing fails for any reason.
-    """
-    events = episode_metadata.get('publicationEvent', [])
-
-    # Prefer "current" events
-    current_events = [e for e in events if e.get('temporalStatus') == 'currently']
-    selected_events = current_events or events
-
-    start_times = [e.get('startTime') for e in selected_events if e.get('startTime')]
-    if start_times:
-        first = min(start_times)
-        return _parse_areena_timestamp(first)
-    else:
-        return None
-
-
 def parse_finnish_date(date_string: str) -> Optional[datetime]:
     """Parse a date string "14.05.2021" as a datetime object.
 
@@ -182,7 +160,7 @@ def parse_finnish_date(date_string: str) -> Optional[datetime]:
         return None
 
 
-def _parse_areena_timestamp(timestamp: str) -> Optional[datetime]:
+def parse_areena_timestamp(timestamp: str) -> Optional[datetime]:
     # Python prior to 3.7 doesn't support a colon in the timezone
     if re.search(r'\d\d:\d\d$', timestamp):
         timestamp = timestamp[:-3] + timestamp[-2:]
@@ -202,22 +180,33 @@ def duration_from_search_result(search_result: Dict) -> Optional[int]:
     labels = search_result.get('labels', [])
     duration_labels = [x.get('raw') for x in labels if x.get('type') == 'duration']
     if duration_labels:
-        return pt_duration_as_seconds(duration_labels[0])
+        return iso_duration_as_seconds(duration_labels[0])
     else:
         return None
 
 
-def pt_duration_as_seconds(pt_duration: str) -> Optional[int]:
-    """Convert PT duration string to integer seconds.
+def iso_duration_as_seconds(duration_str: str) -> Optional[int]:
+    """Convert an ISO 8601 duration string to integer seconds.
 
-    Examples of PT durations: "PT1832S", "PT1H28M14S", "PT23M49.600S"
+    Supports only hours, minutes and seconds.
+
+    Examples of ISO durations: "PT1832S", "PT1H28M14S", "PT23M49.600S"
     """
     r = r'PT(?:(?P<hours>\d+)H)?(?:(?P<mins>\d+)M)?(?:(?P<secs>\d+)(?:\.\d+)?S)?$'
-    m = re.match(r, pt_duration)
+    m = re.match(r, duration_str)
     if m:
         hours = m.group('hours') or 0
         mins = m.group('mins') or 0
         secs = m.group('secs') or 0
         return 3600 * int(hours) + 60 * int(mins) + int(secs)
+    else:
+        return None
+
+
+def raw_label_by_type(labels: dict, type_name: str) -> Optional[str]:
+    """Return the "raw" value of an Areena API label object which as the given type."""
+    matches = [x for x in labels if x.get('type') == type_name]
+    if matches:
+        return matches[0].get('raw')
     else:
         return None

@@ -1,7 +1,8 @@
 import requests  # type: ignore
 from . import logger
-from .extractor import duration_from_search_result, get_text, \
-    parse_finnish_date, parse_publication_event_date, pt_duration_as_seconds
+from .playlist import download_playlist, parse_playlist_seasons
+from .extractor import duration_from_search_result, parse_finnish_date
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, List, Optional
 from urllib.parse import urlencode
@@ -50,16 +51,13 @@ class SearchNavigationLink(AreenaLink):
         self.page_size = page_size
 
 
+@dataclass(frozen=True)
 class SeriesNavigationLink(AreenaLink):
-    def __init__(
-        self,
-        series_id: str,
-        offset: int,
-        page_size: int
-    ):
-        self.series_id = series_id
-        self.offset = offset
-        self.page_size = page_size
+    season_playlist_url: str
+    season_number: int
+    offset: int
+    page_size: int
+    is_next_page: bool
 
 
 def live_tv_manifest_url(stream_id, stream_name):
@@ -71,8 +69,52 @@ def playlist(
     offset: int = 0,
     page_size: int = DEFAULT_PAGE_SIZE
 ) -> List[AreenaLink]:
-    playlist_data = _load_playlist_page(series_id, offset, page_size)
-    return _parse_playlist(playlist_data, series_id)
+    seasons = parse_playlist_seasons(series_id)
+    if seasons is None:
+        logger.warning('Failed to parse the playlist')
+        return []
+
+    season_urls = seasons.season_playlist_urls()
+
+    if len(season_urls) == 1:
+        return season_playlist(season_urls[0][1], offset, page_size)
+    else:
+        return [
+            SeriesNavigationLink(url, i, 0, DEFAULT_PAGE_SIZE, False)
+            for i, url in season_urls
+        ]
+
+
+def season_playlist(
+    season_url: str,
+    offset: int = 0,
+    page_size: int = DEFAULT_PAGE_SIZE
+) -> List[AreenaLink]:
+    playlist, meta = download_playlist(season_url, offset, page_size)
+
+    links: List[AreenaLink] = [
+        StreamLink(
+            homepage=ep.homepage,
+            title=ep.title,
+            description=ep.description,
+            duration_seconds=ep.duration_seconds,
+            published=ep.published,
+            image_id=ep.image_id,
+            image_version=ep.image_version
+        )
+        for ep in playlist
+    ]
+
+    # Pagination links
+    limit = meta.get('limit', DEFAULT_PAGE_SIZE)
+    offset = meta.get('offset', 0)
+    count = meta.get('count', 0)
+
+    next_offset = offset + limit
+    if next_offset < count:
+        links.append(SeriesNavigationLink(season_url, 0, next_offset, limit, True))
+
+    return links
 
 
 def search(
@@ -82,46 +124,6 @@ def search(
 ) -> List[AreenaLink]:
     search_response = _get_search_results(keyword, offset, page_size)
     return _parse_search_results(search_response)
-
-
-def _load_playlist_page(series_id: str, offset: int, page_size: int) -> Dict:
-    r = requests.get(_playlist_url(series_id, ascending=True, offset=offset, page_size=page_size))
-    r.raise_for_status()
-    return r.json()
-
-
-def _parse_playlist(playlist_data: Dict, series_id: str) -> List[AreenaLink]:
-    links: List[AreenaLink] = []
-    for episode in playlist_data.get('data', []):
-        if 'id' in episode:
-            pid = episode['id']
-            image_data = episode.get('image', {})
-            if 'duration' in episode:
-                duration = pt_duration_as_seconds(episode['duration'])
-            else:
-                duration = None
-
-            links.append(StreamLink(
-                homepage=f'yleareena://items/{pid}',
-                title=get_text(episode.get('title', {})),
-                description=get_text(episode.get('description', {})),
-                duration_seconds=duration,
-                image_id=image_data.get('id'),
-                image_version=image_data.get('version'),
-                published=parse_publication_event_date(episode)
-            ))
-
-    # Pagination links
-    meta = playlist_data.get('meta', {})
-    limit = meta.get('limit', DEFAULT_PAGE_SIZE)
-    offset = meta.get('offset', 0)
-    count = meta.get('count', 0)
-
-    next_offset = offset + limit
-    if next_offset < count:
-        links.append(SeriesNavigationLink(series_id, next_offset, limit))
-
-    return links
 
 
 def _get_search_results(keyword: str, offset: int, page_size: int) -> Dict:
@@ -189,21 +191,6 @@ def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
         results.append(SearchNavigationLink(keyword, next_offset, limit))
 
     return results
-
-
-def _playlist_url(series_id: str, ascending: bool, offset: int, page_size: int) -> str:
-    # Reference: https://docs.api.yle.fi/api/programs-api-v3
-    sort_order = 'asc' if ascending else 'desc'
-    q = urlencode({
-        'availability': 'current',
-        'program_type': 'program',
-        'offset': str(offset),
-        'limit': str(page_size),
-        'order': f'natural:{sort_order}',
-        'app_id': 'areena_web_frontend_prod',
-        'app_key': '4622a8f8505bb056c956832a70c105d4',
-    })
-    return f'https://programs.api.yle.fi/v3/schema/v1/series/{series_id}/episodes?{q}'
 
 
 def _search_url(keyword: str, offset: int, page_size: int) -> str:

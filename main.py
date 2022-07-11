@@ -106,19 +106,21 @@ def list_item_series(
 
 def list_item_series_next_page(
     label: str,
-    series_id: str,
-    offset: int = 0,
-    page_size: int = areena.DEFAULT_PAGE_SIZE
+    season_playlist_url: str,
+    offset: int,
+    page_size: int,
+    bottom: bool
 ):
     q = urlencode({
-        'action': 'series',
-        'series_id': series_id,
+        'action': 'season',
+        'season_playlist_url': season_playlist_url,
         'offset': offset,
         'page_size': page_size,
     })
     item_url = f'{_url}?{q}'
     item = xbmcgui.ListItem(label, offscreen=True)
-    item.setProperty('SpecialSort', 'bottom')
+    if bottom:
+        item.setProperty('SpecialSort', 'bottom')
     is_folder = True
     return (item_url, item, is_folder)
 
@@ -216,6 +218,10 @@ def show_series(series_id: str, offset: int, page_size: int) -> None:
     show_links(areena.playlist(series_id, offset, page_size))
 
 
+def show_season(season_playlist_url: str, offset: int, page_size: int) -> None:
+    show_links(areena.season_playlist(season_playlist_url, offset, page_size))
+
+
 def show_links(links: Sequence[areena.AreenaLink]) -> None:
     listing = []
     for link in links:
@@ -247,11 +253,19 @@ def show_links(links: Sequence[areena.AreenaLink]) -> None:
                 special_sort='bottom'
             )
         elif isinstance(link, areena.SeriesNavigationLink):
+            if link.is_next_page:
+                label = localized(30002)
+                bottom = True
+            else:
+                label = f'{localized(30005)} {link.season_number}'
+                bottom = False
+
             item = list_item_series_next_page(
-                label=localized(30002),
-                series_id=link.series_id,
+                label=label,
+                season_playlist_url=link.season_playlist_url,
                 offset=link.offset,
-                page_size=link.page_size
+                page_size=link.page_size,
+                bottom=bottom
             )
         else:
             logger.warning(f'Unknown Areena link type: {type(link)}')
@@ -293,6 +307,10 @@ def router(paramstring: str) -> None:
             offset = int_or_else(params.get('offset', ''), 0)
             page_size = int_or_else(params.get('page_size', ''), areena.DEFAULT_PAGE_SIZE)
             show_series(params['series_id'], offset, page_size)
+        elif action == 'season':
+            offset = int_or_else(params.get('offset', ''), 0)
+            page_size = int_or_else(params.get('page_size', ''), areena.DEFAULT_PAGE_SIZE)
+            show_season(params['season_playlist_url'], offset, page_size)
         elif action == 'search_menu':
             show_search()
         elif action == 'search_input':

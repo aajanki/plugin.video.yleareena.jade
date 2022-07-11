@@ -35,3 +35,7 @@ msgstr "Toistettavaa ohjelmaa ei löytynyt"
 msgctxt "#30004"
 msgid "Search results not found"
 msgstr "Hakutuloksia ei löytynyt"
+
+msgctxt "#30005"
+msgid "Season"
+msgstr "Kausi"

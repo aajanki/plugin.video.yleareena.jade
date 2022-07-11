@@ -35,3 +35,7 @@ msgstr ""
 msgctxt "#30004"
 msgid "Search results not found"
 msgstr ""
+
+msgctxt "#30005"
+msgid "Season"
+msgstr ""
