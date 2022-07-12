@@ -34,7 +34,9 @@ def test_playlist_one_season():
     assert len(streams) > 0
     assert all(x.homepage for x in streams)
     assert all(x.title not in [None, '', '???'] for x in streams)
-    assert all(x.thumbnail for x in streams)
+    assert all(x.duration_seconds is not None for x in streams)
+    assert all(x.published is not None for x in streams)
+    assert all(x.thumbnail is not None for x in streams)
     assert all(x.is_folder is False for x in streams)
 
     assert len(navigation) == 1
@@ -59,14 +61,16 @@ def test_navigate_into_a_seasons():
     seasons = [x for x in playlist if isinstance(x, areena.SeriesNavigationLink)]
     assert len(seasons) >= 3
 
-    # Select the season 3 and list the episodes
-    episodes = areena.season_playlist(seasons[2].season_playlist_url)
+    # Select the season 2 and list the episodes
+    episodes = areena.season_playlist(seasons[1].season_playlist_url)
     streams = [x for x in episodes if isinstance(x, areena.StreamLink)]
 
     assert len(streams) > 0
     assert all(x.homepage for x in streams)
     assert all(x.title not in [None, '', '???'] for x in streams)
-    assert all(x.thumbnail for x in streams)
+    assert all(x.duration_seconds is not None for x in streams)
+    assert all(x.published is not None for x in streams)
+    assert all(x.thumbnail is not None for x in streams)
     assert all(x.is_folder is False for x in streams)
 
 

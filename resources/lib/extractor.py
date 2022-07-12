@@ -3,7 +3,7 @@ import requests  # type: ignore
 from . import logger, kaltura
 from .kaltura import ManifestUrl
 from datetime import datetime
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 from urllib.parse import urlparse
 
 
@@ -144,21 +144,6 @@ def parse_finnish_date(date_string: str) -> Optional[datetime]:
         return None
 
 
-def parse_areena_timestamp(timestamp: str) -> Optional[datetime]:
-    # Python prior to 3.7 doesn't support a colon in the timezone
-    if re.search(r'\d\d:\d\d$', timestamp):
-        timestamp = timestamp[:-3] + timestamp[-2:]
-
-    return _strptime_or_none(timestamp, '%Y-%m-%dT%H:%M:%S%z')
-
-
-def _strptime_or_none(timestamp: str, fmt: str) -> Optional[datetime]:
-    try:
-        return datetime.strptime(timestamp, fmt)
-    except ValueError:
-        return None
-
-
 def duration_from_search_result(search_result: Dict) -> Optional[int]:
     """Extract duration in seconds from a Areena search API result item."""
     labels = search_result.get('labels', [])
@@ -187,10 +172,7 @@ def iso_duration_as_seconds(duration_str: str) -> Optional[int]:
         return None
 
 
-def raw_label_by_type(labels: dict, type_name: str) -> Optional[str]:
-    """Return the "raw" value of an Areena API label object which as the given type."""
+def label_by_type(labels: dict, type_name: str, key_name: str) -> List[str]:
+    """Return a key value of an Areena API label object which as the given type."""
     matches = [x for x in labels if x.get('type') == type_name]
-    if matches:
-        return matches[0].get('raw')
-    else:
-        return None
+    return [x[key_name] for x in matches if key_name in x]

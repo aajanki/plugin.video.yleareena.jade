@@ -1,12 +1,13 @@
 import html5lib
 import json
+import re
 import requests  # type: ignore
 from . import logger
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Mapping, Optional, Tuple
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
-from .extractor import iso_duration_as_seconds, parse_areena_timestamp, raw_label_by_type
+from .extractor import iso_duration_as_seconds, label_by_type
 
 
 @dataclass(frozen=True)
@@ -104,21 +105,22 @@ def _parse_series_episode_data(playlist_page_url):
 
         labels = data.get('labels')
 
-        # TV episodes have "progress", radio episodes have "duration"
         duration = None
-        duration_str = raw_label_by_type(labels, 'progress') or \
-            raw_label_by_type(labels, 'duration')
+        duration_str = label_by_type(labels, 'progress', 'raw')
         if duration_str:
-            duration = iso_duration_as_seconds(duration_str)
+            duration = iso_duration_as_seconds(duration_str[0])
 
-        # Only radio episodes have a release date
         release_date = None
-        date_str = raw_label_by_type(labels, 'releaseDate')
-        if date_str:
-            try:
-                release_date = parse_areena_timestamp(date_str)
-            except ValueError:
-                pass
+        generics = label_by_type(labels, 'generic', 'formatted')
+        for val in generics:
+            m = re.match(r'[a-z]{2} (?P<day>\d{1,2})\.(?P<month>\d{1,2})\.(?P<year>\d{4})', val)
+            if m:
+                release_date = datetime(
+                    int(m.group('year')),
+                    int(m.group('month')),
+                    int(m.group('day'))
+                )
+                break
 
         if uri:
             media_id = uri.rsplit('/')[-1]
