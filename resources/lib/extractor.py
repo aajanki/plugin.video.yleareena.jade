@@ -89,7 +89,7 @@ def media_url_for_pid(pid: str) -> Optional[ManifestUrl]:
     if manifest_url is None:
         return None
 
-    logger.info(
+    logger.debug(
         f'Manifest URL {manifest_url.manifest_type} '
         f'from {manifest_url.debug_source_name}'
     )

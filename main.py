@@ -183,7 +183,7 @@ def show_search_result_page(
     offset: int = 0,
     page_size: int = areena.DEFAULT_PAGE_SIZE
 ) -> None:
-    logger.info(f'Executing search: "{keyword}", offset = {offset}, page_size = {page_size}')
+    logger.debug(f'Executing search: "{keyword}", offset = {offset}, page_size = {page_size}')
 
     searchresults = areena.search(keyword, offset, page_size)
     show_links(searchresults)
