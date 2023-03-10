@@ -9,7 +9,7 @@ from resources.lib import areena
 from resources.lib import logger
 from resources.lib.extractor import extract_media_url
 from resources.lib.searchhistory import get_search_history
-from resources.lib.kodi import play_media, show_notification, icon_path
+from resources.lib.kodi import play_media, show_notification, icon_path, set_video_info
 
 _url = sys.argv[0]
 _handle = int(sys.argv[1])
@@ -65,16 +65,7 @@ def list_item_video(
     if is_live:
         item.setProperty('IsLive', 'true')
 
-    video_info = {'title': label}
-    if published is not None:
-        video_info['date'] = published.strftime('%d.%m.%Y')
-        video_info['aired'] = published.strftime('%Y-%m-%d')
-    if description is not None:
-        video_info['plot'] = description
-        video_info['plotoutline'] = description
-    if duration is not None:
-        video_info['duration'] = str(duration)
-    item.setInfo('video', video_info)
+    set_video_info(item, label, published, description, duration)
 
     art = {}
     if thumbnail:
