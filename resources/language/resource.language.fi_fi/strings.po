@@ -39,3 +39,7 @@ msgstr "Hakutuloksia ei löytynyt"
 msgctxt "#30005"
 msgid "Season"
 msgstr "Kausi"
+
+msgctxt "#30006"
+msgid "Live broadcasts"
+msgstr "Suorat"

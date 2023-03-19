@@ -1,3 +1,5 @@
+import html5lib
+import json
 import requests  # type: ignore
 from . import logger
 from .playlist import download_playlist, parse_playlist_seasons
@@ -5,7 +7,7 @@ from .extractor import duration_from_search_result, parse_finnish_date
 from dataclasses import dataclass, InitVar
 from datetime import datetime
 from typing import Dict, List, Optional
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin
 
 DEFAULT_PAGE_SIZE = 30
 
@@ -218,3 +220,76 @@ def _fanart_url(image_id: str, version: Optional[str] = None) -> str:
         f'https://images.cdn.yle.fi/image/upload/w_auto,dpr_auto,fl_lossy,f_auto,'
         f'q_auto,d_yle-elava-arkisto.jpg/v{version}/{image_id}.jpg'
     )
+
+
+def get_live_broadcasts():
+    url = 'https://areena.yle.fi/tv/suorat'
+    r = requests.get(url)
+    r.raise_for_status()
+
+    html_tree = html5lib.parse(r.text, namespaceHTMLElements=False)
+    return _parse_areena_live_programs(url, html_tree)
+
+
+def _parse_areena_live_programs(baseurl, html_tree):
+    container = _find_live_container(html_tree)
+    if container is None:
+        logger.warning(f'Failed to find the live broadcast container at {baseurl}')
+        return []
+
+    streams = []
+    cards = container.findall('section/ul/li/ul/li')
+    live_cards = [x for x in cards if _is_live_card(x)]
+    for card in live_cards:
+        link = card.find('a')
+        href = link.get('href')
+        broadcast_time = link.findtext(
+            'div[@class="schedule-card-small__header"]'
+            '/div[@class="schedule-card-small__broadcast-info"]'
+            '/span[@class="schedule-card-small__publication"]')
+        title = link.findtext(
+            'div[@class="schedule-card-small__header"]'
+            '/span[@class="schedule-card-small__title"]'
+            '/span[@itemprop="name"]')
+
+        streams.append(StreamLink(
+            homepage=urljoin(baseurl, href),
+            title=f'{broadcast_time} {title}',
+        ))
+
+    return streams
+
+
+def _find_live_container(html_tree):
+    containers = html_tree.findall('.//div[@class="view-lists"]/div[@class="card-list-container"]')
+    for container in containers:
+        if _is_areena_live_container(container):
+            return container
+
+    return None
+
+
+def _is_areena_live_container(html_element):
+    dataliststr = html_element.get('data-list')
+    if not dataliststr:
+        return False
+
+    try:
+        datalist = json.loads(dataliststr)
+    except json.JSONDecodeError:
+        datalist = {}
+
+    title = datalist.get('title')
+    return title == 'Yle Areena'
+
+
+def _is_live_card(html_element):
+    is_tv_episode = html_element.get('itemtype') == 'http://schema.org/TVEpisode'
+    html_class = html_element.get('class') or ''
+    is_non_empty = (
+        'expired' in html_class or
+        'current' in html_class or
+        'upcoming' in html_class
+    )
+
+    return is_tv_episode and is_non_empty

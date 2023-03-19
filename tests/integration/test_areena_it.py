@@ -87,3 +87,11 @@ def test_playlist_pagination():
     assert len(streams) > 0
     assert len(navigation) == 1
     assert navigation[0].offset == 10
+
+
+def test_list_live_broadcasts():
+    playlist = areena.get_live_broadcasts()
+
+    # This will fail if there is ever a day when the Yle Areena "channel"
+    # does not have any live broadcasts
+    assert len(playlist) > 0

@@ -37,6 +37,7 @@ def show_menu() -> None:
             thumbnail=icon_path('teemafem.png'),
             is_live=True
         ),
+        list_item_live_broadcasts(),
         list_item_search_menu(),
     ]
 
@@ -120,6 +121,14 @@ def list_item_search_menu() -> Tuple[str, Any, bool]:
     item_url = f'{_url}?action=search_menu'
     item = xbmcgui.ListItem(localized(30000), offscreen=True)
     item.setArt({'thumb': icon_path('search.png')})
+    is_folder = True
+    return (item_url, item, is_folder)
+
+
+def list_item_live_broadcasts() -> Tuple[str, Any, bool]:
+    item_url = f'{_url}?action=live_menu'
+    item = xbmcgui.ListItem(localized(30006), offscreen=True)
+    item.setArt({'thumb': icon_path('live.png')})  # TODO
     is_folder = True
     return (item_url, item, is_folder)
 
@@ -213,7 +222,11 @@ def show_season(season_playlist_url: str, offset: int, page_size: int) -> None:
     show_links(areena.season_playlist(season_playlist_url, offset, page_size))
 
 
-def show_links(links: Sequence[areena.AreenaLink]) -> None:
+def show_live_broadcasts() -> None:
+    show_links(areena.get_live_broadcasts(), enable_sorting=False)
+
+
+def show_links(links: Sequence[areena.AreenaLink], *, enable_sorting=True) -> None:
     listing = []
     for link in links:
         if isinstance(link, areena.StreamLink):
@@ -265,10 +278,13 @@ def show_links(links: Sequence[areena.AreenaLink]) -> None:
         listing.append(item)
 
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
-    xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_UNSORTED)
-    xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_DATE)
-    xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL)
-    xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_DURATION)
+    if enable_sorting:
+        xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_UNSORTED)
+        xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_DATE)
+        xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL)
+        xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_DURATION)
+    else:
+        xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_NONE)
     xbmcplugin.endOfDirectory(_handle)
 
 
@@ -304,6 +320,8 @@ def router(paramstring: str) -> None:
             show_season(params['season_playlist_url'], offset, page_size)
         elif action == 'search_menu':
             show_search()
+        elif action == 'live_menu':
+            show_live_broadcasts()
         elif action == 'search_input':
             do_search_query()
         elif action == 'search_page':
