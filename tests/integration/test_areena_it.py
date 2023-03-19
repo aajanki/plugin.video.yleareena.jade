@@ -46,7 +46,7 @@ def test_playlist_one_season():
 
 def test_playlist_many_seasons():
     # This series has multiple seasons. Should list only the seasons.
-    playlist = areena.playlist('1-50552121')
+    playlist = areena.playlist('1-50688600')
     streams = [x for x in playlist if isinstance(x, areena.StreamLink)]
     navigation = [x for x in playlist if isinstance(x, areena.SeriesNavigationLink)]
 
