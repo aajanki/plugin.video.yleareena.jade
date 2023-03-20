@@ -128,7 +128,7 @@ def list_item_search_menu() -> Tuple[str, Any, bool]:
 def list_item_live_broadcasts() -> Tuple[str, Any, bool]:
     item_url = f'{_url}?action=live_menu'
     item = xbmcgui.ListItem(localized(30006), offscreen=True)
-    item.setArt({'thumb': icon_path('live.png')})  # TODO
+    item.setArt({'thumb': icon_path('live.png')})
     is_folder = True
     return (item_url, item, is_folder)
 
