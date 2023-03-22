@@ -36,8 +36,6 @@ class StreamLink(AreenaLink):
         if image_id is not None:
             if self.thumbnail is None:
                 self.thumbnail = _thumbnail_url(image_id, image_version)
-            if self.fanart is None:
-                self.fanart = _fanart_url(image_id, image_version)
 
 
 @dataclass(frozen=True)
