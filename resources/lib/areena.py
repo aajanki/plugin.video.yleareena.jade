@@ -230,41 +230,52 @@ def get_live_broadcasts():
 
 
 def _parse_areena_live_programs(baseurl, html_tree):
-    container = _find_live_container(html_tree)
-    if container is None:
+    containers = _find_live_containers(html_tree)
+    if not containers:
         logger.warning(f'Failed to find the live broadcast container at {baseurl}')
         return []
 
-    streams = []
-    cards = container.findall('section/ul/li/ul/li')
-    live_cards = [x for x in cards if _is_live_card(x)]
-    for card in live_cards:
-        link = card.find('a')
-        href = link.get('href')
-        broadcast_time = link.findtext(
-            'div[@class="schedule-card-small__header"]'
-            '/div[@class="schedule-card-small__broadcast-info"]'
-            '/span[@class="schedule-card-small__publication"]')
-        title = link.findtext(
-            'div[@class="schedule-card-small__header"]'
-            '/span[@class="schedule-card-small__title"]'
-            '/span[@itemprop="name"]')
+    live_data = []
+    for container in containers:
+        cards = container.findall('section/ul/li/ul/li')
+        if cards is not None:
+            live_cards = [x for x in cards if _is_live_card(x)]
+            for card in live_cards:
+                link = card.find('a')
+                if link is not None:
+                    broadcast_time = link.findtext(
+                        'div[@class="schedule-card-small__header"]'
+                        '/div[@class="schedule-card-small__broadcast-info"]'
+                        '/span[@class="schedule-card-small__publication"]')
+                    title = link.findtext(
+                        'div[@class="schedule-card-small__header"]'
+                        '/span[@class="schedule-card-small__title"]'
+                        '/span[@itemprop="name"]')
+                    live_data.append({
+                        'href': link.get('href'),
+                        'broadcast_time': broadcast_time or '00:00',
+                        'title': title or 'Live TV',
+                    })
 
-        streams.append(StreamLink(
-            homepage=urljoin(baseurl, href),
-            title=f'{broadcast_time} {title}',
-        ))
+    live_data = sorted(live_data, key=lambda x: x['broadcast_time'])
 
-    return streams
+    return [
+        StreamLink(
+            homepage=urljoin(baseurl, x['href']),
+            title=f'{x["broadcast_time"]} {x["title"]}',
+        )
+        for x in live_data
+    ]
 
 
-def _find_live_container(html_tree):
+def _find_live_containers(html_tree):
+    live_containers = []
     containers = html_tree.findall('.//div[@class="view-lists"]/div[@class="card-list-container"]')
     for container in containers:
         if _is_areena_live_container(container):
-            return container
+            live_containers.append(container)
 
-    return None
+    return live_containers
 
 
 def _is_areena_live_container(html_element):
@@ -278,7 +289,7 @@ def _is_areena_live_container(html_element):
         datalist = {}
 
     title = datalist.get('title')
-    return title == 'Yle Areena'
+    return title not in ['Yle TV1', 'Yle TV2', 'Yle Teema Fem']
 
 
 def _is_live_card(html_element):
