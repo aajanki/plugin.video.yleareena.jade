@@ -3,7 +3,8 @@ import json
 import requests  # type: ignore
 from . import logger
 from .playlist import download_playlist, parse_playlist_seasons
-from .extractor import duration_from_search_result, parse_finnish_date
+from .extractor import duration_from_search_result, parse_finnish_date, \
+    program_id_from_url, preview_parser
 from dataclasses import dataclass, InitVar
 from datetime import datetime
 from typing import Dict, List, Optional
@@ -242,30 +243,33 @@ def _parse_areena_live_programs(baseurl, html_tree):
             live_cards = [x for x in cards if _is_live_card(x)]
             for card in live_cards:
                 link = card.find('a')
-                if link is not None:
+                if link is not None and link.get('href') is not None:
                     broadcast_time = link.findtext(
                         'div[@class="schedule-card-small__header"]'
                         '/div[@class="schedule-card-small__broadcast-info"]'
                         '/span[@class="schedule-card-small__publication"]')
+                    broadcast_time = broadcast_time or '00:00'
                     title = link.findtext(
                         'div[@class="schedule-card-small__header"]'
                         '/span[@class="schedule-card-small__title"]'
                         '/span[@itemprop="name"]')
-                    live_data.append({
-                        'href': link.get('href'),
-                        'broadcast_time': broadcast_time or '00:00',
-                        'title': title or 'Live TV',
-                    })
+                    title = title or 'Live'
+                    homepage = urljoin(baseurl, link.get('href'))
+                    pid = program_id_from_url(homepage)
+                    preview = preview_parser(pid)
 
-    live_data = sorted(live_data, key=lambda x: x['broadcast_time'])
+                    stream = StreamLink(
+                        homepage=homepage,
+                        title=f'{broadcast_time} {title}',
+                        description=preview.description(),
+                        image_id=preview.image().get('id'),
+                        image_version=preview.image().get('version'),
+                    )
+                    live_data.append((broadcast_time, stream))
 
-    return [
-        StreamLink(
-            homepage=urljoin(baseurl, x['href']),
-            title=f'{x["broadcast_time"]} {x["title"]}',
-        )
-        for x in live_data
-    ]
+    live_data = sorted(live_data, key=lambda x: x[0])
+
+    return [x[1] for x in live_data]
 
 
 def _find_live_containers(html_tree):

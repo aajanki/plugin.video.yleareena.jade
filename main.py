@@ -212,7 +212,7 @@ def show_search() -> None:
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_NONE)
     xbmcplugin.endOfDirectory(_handle)
-    xbmcplugin.setContent(_handle, "videos")
+    xbmcplugin.setContent(_handle, 'videos')
 
 
 def show_series(series_id: str, offset: int, page_size: int) -> None:
@@ -287,7 +287,7 @@ def show_links(links: Sequence[areena.AreenaLink], *, enable_sorting=True) -> No
     else:
         xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_NONE)
     xbmcplugin.endOfDirectory(_handle)
-    xbmcplugin.setContent(_handle, "videos")
+    xbmcplugin.setContent(_handle, 'videos')
 
 
 def int_or_else(x: str, default: int) -> int:

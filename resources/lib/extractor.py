@@ -39,6 +39,14 @@ class AreenaPreviewApiResponse:
         else:
             return 'video'
 
+    def description(self) -> Optional[str]:
+        description = self.ongoing().get('description', {})
+        return description.get('fin') or description.get('swe')
+
+    def image(self) -> Dict[str, Any]:
+        # {"id": ..., "version": ...}
+        return self.ongoing().get('image', {})
+
     def is_live(self) -> bool:
         data = self.preview.get('data', {})
         return data.get('ongoing_channel') is not None
