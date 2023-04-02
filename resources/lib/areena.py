@@ -154,6 +154,7 @@ def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
                     title=title,
                     duration_seconds=duration,
                     published=published,
+                    description=title,
                     image_id=image_data.get('id'),
                     image_version=image_data.get('version')
                 ))

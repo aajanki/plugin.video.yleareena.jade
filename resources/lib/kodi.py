@@ -56,7 +56,6 @@ def set_video_info_v19(
         video_info['aired'] = published.strftime('%Y-%m-%d')
     if plot is not None:
         video_info['plot'] = plot
-        video_info['plotoutline'] = plot
     if duration is not None:
         video_info['duration'] = str(duration)
 
