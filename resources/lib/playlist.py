@@ -44,7 +44,7 @@ def parse_playlist_seasons(series_id):
     html_tree = html5lib.parse(r.text, namespaceHTMLElements=False)
     next_data = _parse_next_data(html_tree)
     tabs = next_data.get('props', {}).get('pageProps', {}).get('view', {}).get('tabs', [])
-    episodes_tab = [tab for tab in tabs if tab.get('title') == 'Jaksot']
+    episodes_tab = [tab for tab in tabs if tab.get('title') in ['Jaksot', 'Klipit']]
     if episodes_tab:
         episodes_content = episodes_tab[0].get('content', [])
         if episodes_content:
