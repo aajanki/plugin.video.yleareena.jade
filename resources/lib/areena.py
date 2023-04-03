@@ -135,7 +135,7 @@ def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
 
         if item.get('type') == 'card' and uri:
             if pointer_type in ['program', 'clip']:
-                title = item.get('title')
+                title = item.get('title', {})
                 image_data = item.get('image', {})
                 duration = duration_from_search_result(item)
 
@@ -159,9 +159,14 @@ def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
                     image_version=image_data.get('version')
                 ))
             elif pointer_type == 'series':
+                title = item.get('title', {})
+                image_data = item.get('image', {})
                 results.append(StreamLink(
                     homepage=uri,
-                    title=item.get('title'),
+                    title=title,
+                    description=title,
+                    image_id=image_data.get('id'),
+                    image_version=image_data.get('version'),
                     is_folder=True
                 ))
             elif pointer_type == 'package':
