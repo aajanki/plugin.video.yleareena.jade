@@ -32,25 +32,24 @@ def icon_path(filename: str) -> str:
 
 def set_video_info(
     item: xbmcgui.ListItem,
-    label: str,
+    *,
     published: Optional[datetime] = None,
     plot: Optional[str] = None,
     duration: Optional[int] = None,
 ):
     if hasattr(xbmc.InfoTagVideo, 'setFirstAired'):
-        set_video_info_v20(item, label, published, plot, duration)
+        set_video_info_v20(item, published, plot, duration)
     else:
-        set_video_info_v19(item, label, published, plot, duration)
+        set_video_info_v19(item, published, plot, duration)
 
 
 def set_video_info_v19(
     item: xbmcgui.ListItem,
-    label: str,
     published: Optional[datetime] = None,
     plot: Optional[str] = None,
     duration: Optional[int] = None,
 ):
-    video_info = {'title': label}
+    video_info = {}
     if published is not None:
         video_info['date'] = published.strftime('%d.%m.%Y')
         video_info['aired'] = published.strftime('%Y-%m-%d')
@@ -64,19 +63,16 @@ def set_video_info_v19(
 
 def set_video_info_v20(
     item: xbmcgui.ListItem,
-    label: str,
     published: Optional[datetime] = None,
     plot: Optional[str] = None,
     duration: Optional[int] = None,
 ):
     video_info = item.getVideoInfoTag()
 
-    video_info.setTitle(label)
     if published is not None:
         video_info.setDateAdded(published.strftime('%d.%m.%Y %H:%M:%S'))
         video_info.setFirstAired(published.strftime('%d.%m.%Y'))
     if plot is not None:
         video_info.setPlot(plot)
-    video_info.setPlotOutline(plot)
     if duration is not None:
         video_info.setDuration(duration)

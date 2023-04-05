@@ -66,7 +66,7 @@ def list_item_video(
     if is_live:
         item.setProperty('IsLive', 'true')
 
-    set_video_info(item, label, published, description, duration)
+    set_video_info(item, published=published, plot=description, duration=duration)
 
     art = {}
     if thumbnail:
@@ -83,6 +83,7 @@ def list_item_series(
     label: str,
     series_id: str,
     thumbnail: Optional[str] = None,
+    description: Optional[str] = None,
 ) -> Tuple[str, Any, bool]:
     q = urlencode({
         'action': 'series',
@@ -90,6 +91,7 @@ def list_item_series(
     })
     item_url = f'{_url}?{q}'
     item = xbmcgui.ListItem(label, offscreen=True)
+    set_video_info(item, plot=description)
     if thumbnail:
         item.setArt({'thumb': thumbnail})
     is_folder = True
@@ -161,7 +163,9 @@ def list_item_search_pagination(
 
 def list_item_new_search() -> Tuple[str, Any, bool]:
     item_url = f'{_url}?action=search_input'
-    item = xbmcgui.ListItem('[B]' + localized(30001) + '[/B]', offscreen=True)
+    label = localized(30001)
+    item = xbmcgui.ListItem(f'[B]{label}[/B]', offscreen=True)
+    set_video_info(item, plot=label)
     item.setArt({'thumb': icon_path('search.png')})
     is_folder = True
     return (item_url, item, is_folder)
@@ -237,6 +241,7 @@ def show_links(links: Sequence[areena.AreenaLink], *, enable_sorting=True) -> No
                     label=link.title,
                     series_id=series_id,
                     thumbnail=link.thumbnail,
+                    description=link.description,
                 )
             else:
                 item = list_item_video(
