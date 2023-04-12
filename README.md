@@ -1,6 +1,7 @@
 # Areena Jade - Yle Areena plugin for Kodi
 
-[![Kodi version](https://img.shields.io/badge/kodi%20versions-19-blue)](https://kodi.tv/)
+[![Kodi version 19](https://img.shields.io/badge/kodi%20version-19-blue)](https://kodi.tv/)
+[![Kodi version 20](https://img.shields.io/badge/kodi%20version-20-blue)](https://kodi.tv/)
 [![License: GPLv3](https://img.shields.io/badge/License-GPLv3-yellow.svg)](https://opensource.org/licenses/GPL-3.0)
 
 Kodi plugin for watching video content from [Yle Areena](https://areena.yle.fi/tv). The plugin supports video-on-demand and live TV streams (but not audio streams).
