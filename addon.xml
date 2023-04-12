@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.yleareena.jade"
-       version="1.2.0"
+       version="1.3.0"
        name="Yle Areena"
        provider-name="aajanki">
     <requires>
@@ -27,8 +27,10 @@
         <license>GPL-3.0-or-later</license>
         <source>https://github.com/aajanki/plugin.video.yleareena.jade</source>
         <email>antti.ajanki@iki.fi</email>
-        <news>v1.2.0 (2022-07-12)
-        - Fix the series page navigation after the recent changes in Yle Areena
+        <news>v1.3.0 (2023-04-12)
+            - Areena live TV broadcasts menu
+            - Some search results were not shown
+            - Improved compatibility with Matrix 20
         </news>
     </extension>
 </addon>
