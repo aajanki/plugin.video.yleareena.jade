@@ -13,15 +13,23 @@ from .extractor import iso_duration_as_seconds, label_by_type
 @dataclass(frozen=True)
 class SeriesSeasons:
     base_url: str
-    season_parameters: dict
+    season_options: dict
 
     def season_playlist_urls(self):
-        if self.season_parameters:
-            season_urls = [
-                update_url_query(self.base_url, q)
-                for q in self.season_parameters
-            ]
-            return list(enumerate(season_urls, start=1))
+        if self.season_options:
+            res = []
+            for i, opt in enumerate(self.season_options, start=1):
+                # If the title matches the format "Kausi 1", extract the season
+                # number from it. Otherwise, take the season sequence number.
+                title = opt.get('title', '')
+                season_title_match = re.match(r'^Kausi (\d+)$', title)
+                if season_title_match:
+                    season_number = int(season_title_match.group(1))
+                else:
+                    season_number = i
+                url = update_url_query(self.base_url, opt.get('parameters', {}))
+                res.append((season_number, url))
+            return res
         else:
             return [(1, self.base_url)]
 
@@ -51,13 +59,12 @@ def parse_playlist_seasons(series_id):
             playlist_data = episodes_content[0]
             uri = playlist_data.get('source', {}).get('uri')
 
-            series_parameters = {}
+            options = {}
             filters = playlist_data.get('filters', [])
             if filters:
                 options = filters[0].get('options', [])
-                series_parameters = [x['parameters'] for x in options]
 
-            return SeriesSeasons(uri, series_parameters)
+            return SeriesSeasons(uri, options)
 
     return None
 
