@@ -1,7 +1,7 @@
 import re
 import requests  # type: ignore
 from . import logger, kaltura
-from .kaltura import ManifestUrl
+from .manifesturl import ManifestUrl, random_elisa_ipv4
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
 from urllib.parse import urlparse
@@ -22,14 +22,18 @@ class AreenaPreviewApiResponse:
         if url is None:
             return None
 
-        return ManifestUrl(url, 'hls', debug_source_name='preview manifest URL')
+        headers = {'X-Forwarded-For': random_elisa_ipv4()}
+
+        return ManifestUrl(url, 'hls', headers=headers, debug_source_name='preview manifest URL')
 
     def media_url(self) -> Optional[ManifestUrl]:
         url = self.ongoing().get('media_url')
         if url is None:
             return None
 
-        return ManifestUrl(url, 'hls', debug_source_name='preview media URL')
+        headers = {'X-Forwarded-For': random_elisa_ipv4()}
+
+        return ManifestUrl(url, 'hls', headers=headers, debug_source_name='preview media URL')
 
     def media_type(self) -> Optional[Literal['audio', 'video']]:
         if not self.preview:

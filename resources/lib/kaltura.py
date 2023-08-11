@@ -1,20 +1,12 @@
 import json
 import requests  # type: ignore
 from . import logger
-from dataclasses import dataclass
+from .manifesturl import ManifestUrl, random_elisa_ipv4
 from typing import Optional
 
 _client_tag = 'html5:v1.7.1'
 _partner_id = '1955031'
 _widget_id = '_1955031'
-
-
-@dataclass(frozen=True)
-class ManifestUrl:
-    url: str
-    manifest_type: str
-    headers: Optional[dict] = None
-    debug_source_name: Optional[str] = None
 
 
 def manifest_url(media_id: str) -> Optional[ManifestUrl]:
@@ -25,7 +17,10 @@ def manifest_url(media_id: str) -> Optional[ManifestUrl]:
     if context is None:
         return None
 
-    headers = {'Referer': referrer}
+    headers = {
+        'Referer': referrer,
+        'X-Forwarded-For': random_elisa_ipv4(),
+    }
 
     # Prefer MPEG-DASH, fallback to HLS if DASH is not available
     url = _manifest_from_context(context, 'mpegdash', referrer)
