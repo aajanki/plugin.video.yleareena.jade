@@ -305,23 +305,17 @@ def router(paramstring: str) -> None:
     params = dict(parse_qsl(paramstring[1:]))
     if params:
         action = params.get('action')
-        if action == 'play':
+        if action in ['play', 'play_areena_url']:
             path = params.get('path')
             if not path:
                 logger.error('path missing')
                 return
 
-            media_url2 = media_url_for_plain_url(path)
+            if action == 'play_areenaurl':
+                media_url = extract_media_url(path)
+            else:
+                media_url = media_url_for_plain_url(path)
 
-            logger.info(f'Playing URL: {path}')
-            play_media(_handle, media_url2.url, media_url2.manifest_type, media_url2.headers)
-        elif action == 'play_areenaurl':
-            path = params.get('path')
-            if not path:
-                logger.error('path missing')
-                return
-
-            media_url = extract_media_url(path)
             if media_url is None:
                 logger.error(f'Failed to extract media URL for {path}')
                 show_notification(localized(30003), icon=xbmcgui.NOTIFICATION_ERROR)
