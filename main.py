@@ -305,7 +305,7 @@ def router(paramstring: str) -> None:
     params = dict(parse_qsl(paramstring[1:]))
     if params:
         action = params.get('action')
-        if action in ['play', 'play_areena_url']:
+        if action in ['play', 'play_areenaurl']:
             path = params.get('path')
             if not path:
                 logger.error('path missing')
