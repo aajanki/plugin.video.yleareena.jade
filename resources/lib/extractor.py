@@ -103,6 +103,11 @@ def media_url_for_pid(pid: str) -> Optional[ManifestUrl]:
     return manifest_url
 
 
+def media_url_for_plain_url(url: str) -> Optional[ManifestUrl]:
+    manifest_type = 'hls' if '.m3u8' in url else 'mpd'
+    return ManifestUrl(url, manifest_type, debug_source_name='plain media URL')
+
+
 def program_id_from_url(url: str) -> str:
     parsed = urlparse(url)
     return parsed.path.split('/')[-1]

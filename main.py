@@ -7,7 +7,7 @@ from typing import Any, Optional, Sequence, Tuple
 from urllib.parse import urlencode, parse_qsl
 from resources.lib import areena
 from resources.lib import logger
-from resources.lib.extractor import extract_media_url
+from resources.lib.extractor import extract_media_url, media_url_for_plain_url
 from resources.lib.searchhistory import get_search_history
 from resources.lib.kodi import play_media, show_notification, icon_path, set_video_info
 
@@ -57,8 +57,7 @@ def list_item_video(
     action: str = 'play',
     is_live: bool = False
 ) -> Tuple[str, Any, bool]:
-    manifest_type = 'hls' if '.m3u8' in path else 'mpd'
-    query = urlencode({'action': action, 'path': path, 'manifest_type': manifest_type})
+    query = urlencode({'action': action, 'path': path})
     item_url = f'{_url}?{query}'
     item = xbmcgui.ListItem(label, offscreen=True)
 
@@ -307,7 +306,9 @@ def router(paramstring: str) -> None:
     if params:
         action = params.get('action')
         if action == 'play':
-            play_media(_handle, params['path'], params['manifest_type'])
+            media_url = media_url_for_plain_url(params['path'])
+            logger.info(f'Playing URL: {media_url.url}')
+            play_media(_handle, media_url.url, media_url.manifest_type, media_url.headers)
         elif action == 'play_areenaurl':
             media_url = extract_media_url(params['path'])
             if media_url is None:
