@@ -1,6 +1,6 @@
 import re
 import requests  # type: ignore
-from . import logger
+from . import logger, kaltura
 from .manifesturl import ManifestUrl, random_elisa_ipv4
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
@@ -91,7 +91,13 @@ def media_url_for_pid(pid: str) -> Optional[ManifestUrl]:
     if preview.is_pending():
         logger.warning(f'Stream {pid} not yet been published')
 
-    manifest_url = preview.manifest_url() or preview.media_url()
+    media_id = preview.media_id()
+    if media_id is not None:
+        manifest_url = kaltura.manifest_url(media_id)
+    else:
+        manifest_url = None
+
+    manifest_url = manifest_url or preview.manifest_url() or preview.media_url()
     if manifest_url is None:
         return None
 
