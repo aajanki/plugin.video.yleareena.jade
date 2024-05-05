@@ -139,9 +139,9 @@ def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
                 image_data = item.get('image', {})
                 duration = duration_from_search_result(item)
 
-                # The description field is empty, contains the publish date or
-                # the series name. Try to first parse as date. If parsing fails,
-                # assume that it's the series name.
+                # If the description field is not empty, it contains either the
+                # publication date or the series name. Try to first parse as
+                # date. If parsing fails, assume that it's the series name.
                 published = None
                 description = item.get('description')
                 if description:
@@ -196,17 +196,19 @@ def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
 
 def _search_url(keyword: str, offset: int, page_size: int) -> str:
     q = urlencode({
-        'app_id': 'areena_web_personal_prod',
-        'app_key': '6c64d890124735033c50099ca25dd2fe',
+        'app_id': 'areena-web-items',
+        'app_key': 'wlTs5D9OjIdeS9krPzRQR4I1PYVzoazN',
         'client': 'yle-areena-web',
         'language': 'fi',
-        'v': 9,
+        'v': 10,
         'episodes': 'true',
         'packages': 'true',
         'query': keyword,
         'service': 'tv',
         'offset': offset,
         'limit': page_size,
+        'country': 'FI',
+        'isPortabilityRegion': 'true',
     })
     return f'https://areena.api.yle.fi/v1/ui/search?{q}'
 
