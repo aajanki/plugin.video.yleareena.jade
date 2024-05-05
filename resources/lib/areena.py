@@ -1,14 +1,11 @@
-import html5lib
-import json
 import requests  # type: ignore
 from . import logger
 from .playlist import download_playlist, parse_playlist_seasons
-from .extractor import duration_from_search_result, parse_finnish_date, \
-    program_id_from_url, preview_parser
+from .extractor import duration_from_search_result, parse_finnish_date
 from dataclasses import dataclass, InitVar
 from datetime import datetime
 from typing import Dict, List, Optional
-from urllib.parse import urlencode, urljoin
+from urllib.parse import urlencode
 
 DEFAULT_PAGE_SIZE = 30
 
@@ -230,87 +227,26 @@ def _fanart_url(image_id: str, version: Optional[str] = None) -> str:
 
 
 def get_live_broadcasts():
-    url = 'https://areena.yle.fi/tv/suorat'
-    r = requests.get(url)
+    r = requests.get(_live_broadcast_url(0, 10))
     r.raise_for_status()
+    results = r.json()
 
-    html_tree = html5lib.parse(r.text, namespaceHTMLElements=False)
-    return _parse_areena_live_programs(url, html_tree)
-
-
-def _parse_areena_live_programs(baseurl, html_tree):
-    containers = _find_live_containers(html_tree)
-    if not containers:
-        logger.warning(f'Failed to find the live broadcast container at {baseurl}')
-        return []
-
-    live_data = []
-    for container in containers:
-        cards = container.findall('section/ul/li/ul/li')
-        if cards is not None:
-            live_cards = [x for x in cards if _is_live_card(x)]
-            for card in live_cards:
-                link = card.find('a')
-                if link is not None and link.get('href') is not None:
-                    broadcast_time = link.findtext(
-                        'div[@class="schedule-card-small__header"]'
-                        '/div[@class="schedule-card-small__broadcast-info"]'
-                        '/span[@class="schedule-card-small__publication"]')
-                    broadcast_time = broadcast_time or '00:00'
-                    title = link.findtext(
-                        'div[@class="schedule-card-small__header"]'
-                        '/span[@class="schedule-card-small__title"]'
-                        '/span[@itemprop="name"]')
-                    title = title or 'Live'
-                    homepage = urljoin(baseurl, link.get('href'))
-                    pid = program_id_from_url(homepage)
-                    preview = preview_parser(pid)
-
-                    stream = StreamLink(
-                        homepage=homepage,
-                        title=f'{broadcast_time} {title}',
-                        description=preview.description(),
-                        image_id=preview.image().get('id'),
-                        image_version=preview.image().get('version'),
-                    )
-                    live_data.append((broadcast_time, stream))
-
-    live_data = sorted(live_data, key=lambda x: x[0])
-
-    return [x[1] for x in live_data]
+    return _parse_search_results(results)
 
 
-def _find_live_containers(html_tree):
-    live_containers = []
-    containers = html_tree.findall('.//div[@class="view-lists"]/div[@class="card-list-container"]')
-    for container in containers:
-        if _is_areena_live_container(container):
-            live_containers.append(container)
-
-    return live_containers
-
-
-def _is_areena_live_container(html_element):
-    dataliststr = html_element.get('data-list')
-    if not dataliststr:
-        return False
-
-    try:
-        datalist = json.loads(dataliststr)
-    except json.JSONDecodeError:
-        datalist = {}
-
-    title = datalist.get('title')
-    return title not in ['Yle TV1', 'Yle TV2', 'Yle Teema Fem']
-
-
-def _is_live_card(html_element):
-    is_tv_episode = html_element.get('itemtype') == 'http://schema.org/TVEpisode'
-    html_class = html_element.get('class') or ''
-    is_non_empty = (
-        'expired' in html_class or
-        'current' in html_class or
-        'upcoming' in html_class
-    )
-
-    return is_tv_episode and is_non_empty
+def _live_broadcast_url(offset: int, page_size: int) -> str:
+    # Extracted from https://areena.yle.fi/suorat
+    q = urlencode({
+        'token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb3VyY2UiOiJodHRwczovL3Byb2dyYW1zLmFwaS55bGUuZmkvdjMvc2NoZW1hL3YxL3NjaGVkdWxlcy9ub3c_c2VydmljZT15bGUtYXJlZW5hJnB1YmxpY2F0aW9uX3R5cGU9d2ViY2FzdCIsImNhcmRPcHRpb25zVGVtcGxhdGUiOiJ1cGNvbWluZyIsImFuYWx5dGljcyI6eyJjb250ZXh0Ijp7ImNvbXNjb3JlIjp7InlsZV9yZWZlcmVyIjoiY29tbW9uLmxpdmUubm9faWQuc3VvcmF0LnVudGl0bGVkLmthdHNvX3ZhaW5fYXJlZW5hc3NhIn19fX0.VDwcrmX6MuO5soUe4zUuVCcSofKD5kvk-spjIM9y5A8',  # noqa: E501
+        'crop': '20',
+        'language': 'fi',
+        'v': '10',
+        'client': 'yle-areena-web',
+        'offset': str(offset),
+        'limit': str(page_size),
+        'country': 'FI',
+        'isPortabilityRegion': 'true',
+        'app_id': 'areena-web-items',
+        'app_key': 'wlTs5D9OjIdeS9krPzRQR4I1PYVzoazN'
+    })
+    return f'https://areena.api.yle.fi/v1/ui/content/list?{q}'
