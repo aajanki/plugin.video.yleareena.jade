@@ -124,7 +124,7 @@ def _get_search_results(keyword: str, offset: int, page_size: int) -> Dict:
     return r.json()
 
 
-def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
+def _parse_search_results(search_response: Dict, pagination_links: bool = True) -> List[AreenaLink]:
     results: List[AreenaLink] = []
     for item in search_response.get('data', []):
         uri = item.get('pointer', {}).get('uri')
@@ -177,21 +177,22 @@ def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
                 logger.warning(f'Unknown pointer type: {pointer_type}')
 
     # pagination links
-    meta = search_response.get('meta', {})
-    keyword = (
-        meta
-        .get('analytics', {})
-        .get('onReceive', {})
-        .get('comscore', {})
-        .get('yle_search_phrase', '')
-    )
-    offset = meta.get('offset', 0)
-    limit = meta.get('limit', DEFAULT_PAGE_SIZE)
-    count = meta.get('count', 0)
+    if pagination_links:
+        meta = search_response.get('meta', {})
+        keyword = (
+            meta
+            .get('analytics', {})
+            .get('onReceive', {})
+            .get('comscore', {})
+            .get('yle_search_phrase', '')
+        )
+        offset = meta.get('offset', 0)
+        limit = meta.get('limit', DEFAULT_PAGE_SIZE)
+        count = meta.get('count', 0)
 
-    next_offset = offset + limit
-    if next_offset < count:
-        results.append(SearchNavigationLink(keyword, next_offset, limit))
+        next_offset = offset + limit
+        if next_offset < count:
+            results.append(SearchNavigationLink(keyword, next_offset, limit))
 
     return results
 
@@ -234,9 +235,8 @@ def _fanart_url(image_id: str, version: Optional[str] = None) -> str:
 def get_live_broadcasts():
     r = requests.get(_live_broadcast_url(0, 10))
     r.raise_for_status()
-    results = r.json()
 
-    return _parse_search_results(results)
+    return _parse_search_results(r.json(), False)
 
 
 def _live_broadcast_url(offset: int, page_size: int) -> str:
