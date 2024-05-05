@@ -129,8 +129,13 @@ def _parse_search_results(search_response: Dict) -> List[AreenaLink]:
     for item in search_response.get('data', []):
         uri = item.get('pointer', {}).get('uri')
         pointer_type = item.get('pointer', {}).get('type')
+        transmissions = item.get('transmissions', [])
+        is_upcoming = transmissions and all(
+            x.get('broadcastStatus') == 'upcoming'
+            for x in transmissions
+        )
 
-        if item.get('type') == 'card' and uri:
+        if item.get('type') == 'card' and uri and not is_upcoming:
             if pointer_type in ['program', 'clip']:
                 title = item.get('title', {})
                 image_data = item.get('image', {})
