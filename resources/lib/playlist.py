@@ -82,7 +82,7 @@ def download_playlist(
         'offset': str(offset),
         'limit': str(page_size),
         'app_id': 'areena-web-items',
-        'app_key': 'v9No1mV0omg2BppmDkmDL6tGKw1pRFZt',
+        'app_key': 'wlTs5D9OjIdeS9krPzRQR4I1PYVzoazN',
     }
     playlist_page_url = update_url_query(season_url, params)
     return _parse_series_episode_data(playlist_page_url)

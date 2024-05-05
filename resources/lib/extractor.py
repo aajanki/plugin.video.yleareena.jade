@@ -143,7 +143,8 @@ def preview_url(pid: str) -> str:
     return f'https://player.api.yle.fi/v1/preview/{pid}.json?' \
         'language=fin&ssl=true&countryCode=FI&host=areenaylefi' \
         '&app_id=player_static_prod' \
-        '&app_key=8930d72170e48303cf5f3867780d549b'
+        '&app_key=8930d72170e48303cf5f3867780d549b' \
+        '&isPortabilityRegion=true'
 
 
 def parse_finnish_date(date_string: str) -> Optional[datetime]:
