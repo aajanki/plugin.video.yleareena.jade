@@ -20,6 +20,9 @@ source venv/bin/activate
 pip install -r requirements-dev.txt
 
 pre-commit run --all-files
+
+# To automatically run checks on each commit:
+pre-commit install
 ```
 
 ### Integration and unit tests

@@ -1,6 +1,6 @@
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v3.2.0
+  rev: v4.5.0
   hooks:
   - id: trailing-whitespace
   - id: end-of-file-fixer
@@ -8,16 +8,16 @@ repos:
   - id: check-xml
   - id: double-quote-string-fixer
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.0.1
+  rev: v1.10.0
   hooks:
   - id: mypy
     args:
     - --ignore-missing-imports
-- repo: https://github.com/pre-commit/mirrors-autopep8
-  rev: v2.0.2
+- repo: https://github.com/hhatto/autopep8
+  rev: v2.1.0
   hooks:
   - id: autopep8
 - repo: https://github.com/PyCQA/flake8
-  rev: 6.0.0
+  rev: 7.0.0
   hooks:
   - id: flake8
