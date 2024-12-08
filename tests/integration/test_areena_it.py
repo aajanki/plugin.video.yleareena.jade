@@ -57,14 +57,15 @@ def test_playlist_many_seasons():
     assert not any(x.is_next_page for x in navigation)
 
 
-def test_playlist_many_seasons_unordered():
+def test_playlist_many_seasons_reversed():
     playlist = areena.playlist('1-50640657')
     navigation = [x for x in playlist if isinstance(x, areena.SeriesNavigationLink)]
 
-    # The order of seasons on this page is season 2, season 1
-    assert len(navigation) >= 2
-    assert navigation[0].season_number == 2
-    assert navigation[1].season_number == 1
+    # The order of seasons on this page is season from highest to lowest
+    assert len(navigation) == 3
+    assert navigation[0].season_number == 3
+    assert navigation[1].season_number == 2
+    assert navigation[2].season_number == 1
 
 
 def test_navigate_into_a_seasons():
