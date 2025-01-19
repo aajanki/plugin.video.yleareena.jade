@@ -242,8 +242,7 @@ def get_live_broadcasts():
 def _live_broadcast_url(offset: int, page_size: int) -> str:
     # Extracted from https://areena.yle.fi/suorat
     q = urlencode({
-        'token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb3VyY2UiOiJodHRwczovL3Byb2dyYW1zLmFwaS55bGUuZmkvdjMvc2NoZW1hL3YxL3NjaGVkdWxlcy9ub3c_c2VydmljZT15bGUtYXJlZW5hJnB1YmxpY2F0aW9uX3R5cGU9d2ViY2FzdCIsImNhcmRPcHRpb25zVGVtcGxhdGUiOiJ1cGNvbWluZyIsImFuYWx5dGljcyI6eyJjb250ZXh0Ijp7ImNvbXNjb3JlIjp7InlsZV9yZWZlcmVyIjoiY29tbW9uLmxpdmUubm9faWQuc3VvcmF0LnVudGl0bGVkLmthdHNvX3ZhaW5fYXJlZW5hc3NhIn19fX0.VDwcrmX6MuO5soUe4zUuVCcSofKD5kvk-spjIM9y5A8',  # noqa: E501
-        'crop': '20',
+        'token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb3VyY2UiOiJodHRwczovL3Byb2dyYW1zLmFwaS55bGUuZmkvdjMvc2NoZW1hL3YzL3NjaGVkdWxlcy9ub3c_Y2xhc3NpZmljYXRpb249MzEtMS0zITMxLTItMy42JmxpdmU9dHJ1ZSZwdWJsaWNhdGlvbl90eXBlPWJyb2FkY2FzdCx3ZWJjYXN0JnNlcnZpY2U9eWxlLXR2MSx5bGUtdHYyLHlsZS10ZWVtYS1mZW0seWxlLWFyZWVuYSIsImNhcmRPcHRpb25zVGVtcGxhdGUiOiJ1cGNvbWluZyIsImFuYWx5dGljcyI6eyJjb250ZXh0Ijp7ImNvbXNjb3JlIjp7InlsZV9yZWZlcmVyIjoiY29tbW9uLmxpdmUubm9faWQuc3VvcmF0LnVudGl0bGVkLnVyaGVpbHUifX19fQ.dMfaRQv7n1-2VJI5PPMsSc7yNTwTLbp1-usPXv5FIUI',  # noqa: E501
         'language': 'fi',
         'v': '10',
         'client': 'yle-areena-web',

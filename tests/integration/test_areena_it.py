@@ -27,7 +27,7 @@ def test_search_pagination():
 def test_playlist_one_season():
     # This series has only one season. Should list episodes directly
     # (without the season layer)
-    playlist = areena.playlist('1-4022508', page_size=6)
+    playlist = areena.playlist('1-71672164', page_size=3)
     streams = [x for x in playlist if isinstance(x, areena.StreamLink)]
     navigation = [x for x in playlist if isinstance(x, areena.SeriesNavigationLink)]
 
