@@ -8,15 +8,14 @@ from typing import Optional
 from urllib.parse import urlencode
 
 
-def play_media(handle: int, url: str, manifest_type: str, headers: Optional[dict] = None) -> None:
+def play_media(handle: int, url: str, headers: Optional[dict] = None) -> None:
     listitem = xbmcgui.ListItem(path=url)
     listitem.setMimeType('application/x-mpegurl')
     listitem.setContentLookup(False)
     listitem.setProperty('inputstream', 'inputstream.adaptive')
-    listitem.setProperty('inputstream.adaptive.manifest_type', manifest_type)
     if headers:
         headers_string = urlencode(headers)
-        listitem.setProperty('inputstream.adaptive.stream_headers', headers_string)
+        listitem.setProperty('inputstream.adaptive.manifest_headers', headers_string)
 
     xbmcplugin.setResolvedUrl(handle, True, listitem=listitem)
 

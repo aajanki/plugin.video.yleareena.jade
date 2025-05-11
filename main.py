@@ -322,7 +322,7 @@ def router(paramstring: str) -> None:
                 return
 
             logger.info(f'Playing URL: {media_url.url}')
-            play_media(_handle, media_url.url, media_url.manifest_type, media_url.headers)
+            play_media(_handle, media_url.url, media_url.headers)
         elif action == 'series':
             offset = int_or_else(params.get('offset', ''), 0)
             page_size = int_or_else(params.get('page_size', ''), areena.DEFAULT_PAGE_SIZE)
