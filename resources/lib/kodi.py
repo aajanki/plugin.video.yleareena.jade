@@ -1,4 +1,3 @@
-import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
@@ -32,36 +31,6 @@ def icon_path(filename: str) -> str:
 def set_video_info(
     item: xbmcgui.ListItem,
     *,
-    published: Optional[datetime] = None,
-    plot: Optional[str] = None,
-    duration: Optional[int] = None,
-):
-    if hasattr(xbmc.InfoTagVideo, 'setFirstAired'):
-        set_video_info_v20(item, published, plot, duration)
-    else:
-        set_video_info_v19(item, published, plot, duration)
-
-
-def set_video_info_v19(
-    item: xbmcgui.ListItem,
-    published: Optional[datetime] = None,
-    plot: Optional[str] = None,
-    duration: Optional[int] = None,
-):
-    video_info = {}
-    if published is not None:
-        video_info['date'] = published.strftime('%d.%m.%Y')
-        video_info['aired'] = published.strftime('%Y-%m-%d')
-    if plot is not None:
-        video_info['plot'] = plot
-    if duration is not None:
-        video_info['duration'] = str(duration)
-
-    item.setInfo('video', video_info)
-
-
-def set_video_info_v20(
-    item: xbmcgui.ListItem,
     published: Optional[datetime] = None,
     plot: Optional[str] = None,
     duration: Optional[int] = None,
