@@ -30,14 +30,6 @@ pre-commit install
 python3 -m pytest tests
 ```
 
-## Known problems
-
-#### Problem: Subtitles are not shown
-
-Try to enable the subtitles in the subtitle menu. Sometimes subtitles are not enabled automatically because the language is misdetected.
-
-Live TV and some other streams are available only as HLS streams, and Kodi 19 doesn't fully support subtitles on those kind of streams. The subtitles might work better on Kodi 20.
-
 ## License
 
 GPL v3
