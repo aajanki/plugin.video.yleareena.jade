@@ -7,7 +7,6 @@ from typing import Optional
 @dataclass(frozen=True)
 class ManifestUrl:
     url: str
-    manifest_type: str
     headers: Optional[dict] = None
     debug_source_name: Optional[str] = None
 

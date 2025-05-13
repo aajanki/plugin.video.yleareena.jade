@@ -5,15 +5,16 @@ import xbmcvfs
 from datetime import datetime
 from typing import Optional
 from urllib.parse import urlencode
+from resources.lib.manifesturl import ManifestUrl
 
 
-def play_media(handle: int, url: str, headers: Optional[dict] = None) -> None:
-    listitem = xbmcgui.ListItem(path=url)
+def play_media(handle: int, manifest: ManifestUrl) -> None:
+    listitem = xbmcgui.ListItem(path=manifest.url)
     listitem.setMimeType('application/x-mpegurl')
     listitem.setContentLookup(False)
     listitem.setProperty('inputstream', 'inputstream.adaptive')
-    if headers:
-        headers_string = urlencode(headers)
+    if manifest.headers:
+        headers_string = urlencode(manifest.headers)
         listitem.setProperty('inputstream.adaptive.manifest_headers', headers_string)
 
     xbmcplugin.setResolvedUrl(handle, True, listitem=listitem)

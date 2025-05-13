@@ -24,7 +24,7 @@ class AreenaPreviewApiResponse:
 
         headers = {'X-Forwarded-For': random_elisa_ipv4()}
 
-        return ManifestUrl(url, 'hls', headers=headers, debug_source_name='preview manifest URL')
+        return ManifestUrl(url, headers=headers, debug_source_name='preview manifest URL')
 
     def media_url(self) -> Optional[ManifestUrl]:
         url = self.ongoing().get('media_url')
@@ -33,7 +33,7 @@ class AreenaPreviewApiResponse:
 
         headers = {'X-Forwarded-For': random_elisa_ipv4()}
 
-        return ManifestUrl(url, 'hls', headers=headers, debug_source_name='preview media URL')
+        return ManifestUrl(url, headers=headers, debug_source_name='preview media URL')
 
     def media_type(self) -> Optional[Literal['audio', 'video']]:
         if not self.preview:
@@ -96,7 +96,7 @@ def media_url_for_pid(pid: str) -> Optional[ManifestUrl]:
         return None
 
     logger.debug(
-        f'Manifest URL {manifest_url.manifest_type} '
+        f'Manifest URL {manifest_url.url} '
         f'from {manifest_url.debug_source_name}'
     )
 
@@ -104,8 +104,7 @@ def media_url_for_pid(pid: str) -> Optional[ManifestUrl]:
 
 
 def media_url_for_plain_url(url: str) -> ManifestUrl:
-    manifest_type = 'hls' if '.m3u8' in url else 'mpd'
-    return ManifestUrl(url, manifest_type, debug_source_name='plain media URL')
+    return ManifestUrl(url, debug_source_name='plain media URL')
 
 
 def program_id_from_url(url: str) -> str:
