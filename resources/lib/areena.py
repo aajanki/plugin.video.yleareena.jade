@@ -233,16 +233,47 @@ def _fanart_url(image_id: str, version: Optional[str] = None) -> str:
 
 
 def get_live_broadcasts():
-    r = requests.get(_live_broadcast_url(0, 10))
-    r.raise_for_status()
+    links = []
 
-    return _parse_search_results(r.json(), False)
+    # only in Areena
+    r1 = requests.get(_only_in_areena_live_url(0, 10))
+    if 200 <= r1.status_code < 300:
+        links.extend(_parse_search_results(r1.json(), False))
+    elif r1.status_code >= 400:
+        logger.warning(f'Error {r1.status_code} while downloading {r1.url}')
+
+    # sports
+    r2 = requests.get(_sport_live_url(0, 10))
+    if 200 <= r2.status_code < 300:
+        links.extend(_parse_search_results(r2.json(), False))
+    elif r2.status_code >= 400:
+        logger.warning(f'Error {r2.status_code} while downloading {r2.url}')
+
+    return links
 
 
-def _live_broadcast_url(offset: int, page_size: int) -> str:
+def _sport_live_url(offset: int, page_size: int) -> str:
     # Extracted from https://areena.yle.fi/suorat
     q = urlencode({
         'token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb3VyY2UiOiJodHRwczovL3Byb2dyYW1zLmFwaS55bGUuZmkvdjMvc2NoZW1hL3YzL3NjaGVkdWxlcy9ub3c_Y2xhc3NpZmljYXRpb249MzEtMS0zITMxLTItMy42JmxpdmU9dHJ1ZSZwdWJsaWNhdGlvbl90eXBlPWJyb2FkY2FzdCx3ZWJjYXN0JnNlcnZpY2U9eWxlLXR2MSx5bGUtdHYyLHlsZS10ZWVtYS1mZW0seWxlLWFyZWVuYSIsImNhcmRPcHRpb25zVGVtcGxhdGUiOiJ1cGNvbWluZyIsImFuYWx5dGljcyI6eyJjb250ZXh0Ijp7ImNvbXNjb3JlIjp7InlsZV9yZWZlcmVyIjoiY29tbW9uLmxpdmUubm9faWQuc3VvcmF0LnVudGl0bGVkLnVyaGVpbHUifX19fQ.dMfaRQv7n1-2VJI5PPMsSc7yNTwTLbp1-usPXv5FIUI',  # noqa: E501
+        'language': 'fi',
+        'v': '10',
+        'client': 'yle-areena-web',
+        'offset': str(offset),
+        'limit': str(page_size),
+        'country': 'FI',
+        'isPortabilityRegion': 'true',
+        'app_id': 'areena-web-items',
+        'app_key': 'wlTs5D9OjIdeS9krPzRQR4I1PYVzoazN'
+    })
+    return f'https://areena.api.yle.fi/v1/ui/content/list?{q}'
+
+
+def _only_in_areena_live_url(offset: int, page_size: int) -> str:
+    # Extracted from https://areena.yle.fi/suorat
+    q = urlencode({
+        'token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb3VyY2UiOiJodHRwczovL3Byb2dyYW1zLmFwaS55bGUuZmkvdjMvc2NoZW1hL3YzL3NjaGVkdWxlcy9ub3c_c2VydmljZT15bGUtYXJlZW5hJnB1YmxpY2F0aW9uX3R5cGU9d2ViY2FzdCIsImNhcmRPcHRpb25zVGVtcGxhdGUiOiJ1cGNvbWluZyIsImFuYWx5dGljcyI6eyJjb250ZXh0Ijp7ImNvbXNjb3JlIjp7InlsZV9yZWZlcmVyIjoiY29tbW9uLmxpdmUubm9faWQuc3VvcmF0LnVudGl0bGVkLmthdHNvX3ZhaW5fYXJlZW5hc3NhIn19fX0.pyo16C_dHMlFj7nmARBz0IyWMnSPy6CMAljKCYf6dxE',  # noqa: E501
+        'crop': '20',
         'language': 'fi',
         'v': '10',
         'client': 'yle-areena-web',
