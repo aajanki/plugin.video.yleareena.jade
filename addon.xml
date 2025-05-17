@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.yleareena.jade"
-       version="1.4.0"
+       version="1.5.0"
        name="Yle Areena"
        provider-name="aajanki">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.html5lib" version="1.1.0+matrix.1"/>
-        <import addon="script.module.requests" version="2.25.1+matrix.1" />
-        <import addon="inputstream.adaptive" version="19.0.0"/>
+        <import addon="script.module.requests" version="2.31.0" />
+        <import addon="inputstream.adaptive" version="21.0.0"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="main.py">
         <provides>video</provides>
@@ -27,8 +27,10 @@
         <license>GPL-3.0-or-later</license>
         <source>https://github.com/aajanki/plugin.video.yleareena.jade</source>
         <email>antti.ajanki@iki.fi</email>
-        <news>v1.4.0 (2024-05-07)
-            - Fixed live TV broadcasts menu after changes in Areena
+        <news>v1.5.0 (2025-05-17)
+            - Added support for Kodi 21. Older Kodi versions are no longer supported.
+            - Include "Katso vain Areenassa" links on the live broadcast menu
+            - Improved compatibility by using the same streams as the web Areena
         </news>
     </extension>
 </addon>

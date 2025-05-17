@@ -30,6 +30,12 @@ pre-commit install
 python3 -m pytest tests
 ```
 
+## Known problems
+
+#### Problem: Live TV streams stall
+
+Live TV streams (TV1, TV2, Teema) stall after a few minutes. There is no known fix at the moment.
+
 ## License
 
 GPL v3
